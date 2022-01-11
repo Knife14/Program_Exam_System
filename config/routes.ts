@@ -55,6 +55,12 @@
     component: './demo/',
   },
   {
+    name: 'teacher',
+    path: '/teacher',
+    icon: 'edit',
+    
+  },
+  {
     path: '/',
     redirect: '/welcome',
   },
