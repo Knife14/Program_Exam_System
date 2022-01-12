@@ -58,7 +58,7 @@
     name: 'teacher',
     path: '/teacher',
     icon: 'edit',
-    
+    access: 'canTeacher',
   },
   {
     path: '/',
