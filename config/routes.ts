@@ -61,6 +61,26 @@
     access: 'canTeacher',
   },
   {
+    name: 'TeaExamList',
+    path: '/TeaExamList',
+    icon: 'code',
+    access: 'canTeacher',
+    component: './teacher/TeaExamList',
+  },
+  {
+    name: 'StuExamList',
+    path: '/StuExamList',
+    icon: 'code',
+    access: 'canStudent',
+    component: './student/StuExamList',
+  },
+  {
+    path: '/exam',
+    layout: false,
+    access: 'canStudent',
+    component: './student/exam',
+  },
+  {
     path: '/',
     redirect: '/welcome',
   },

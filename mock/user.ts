@@ -129,15 +129,6 @@ export default {
       access = 'admin';
       return;
     }
-    if (password === '123456' && username === 'user') {
-      res.send({
-        status: 'ok',
-        type,
-        currentAuthority: 'user',
-      });
-      access = 'user';
-      return;
-    }
     if (password === '123456' && username === 'teacher') {
       res.send({
         status: 'ok',
@@ -145,6 +136,15 @@ export default {
         currentAuthority: 'teacher',
       });
       access = 'teacher';
+      return ;
+    }
+    if (password === '123456' && username === 'student') {
+      res.send({
+        status: 'ok',
+        type,
+        currentAuthority: 'student',
+      });
+      access = 'student';
       return ;
     }
     if (type === 'mobile') {
