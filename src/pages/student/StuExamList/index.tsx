@@ -57,17 +57,6 @@ const columns: ProColumns<TableListItem>[] = [
     valueType: 'date',
     sorter: (a, b) => a.createdAt - b.createdAt,
   },
-  {
-    title: '操作',
-    width: 100,
-    key: 'option',
-    valueType: 'option',
-    render: () => [
-      <a key="link">编辑</a>,
-      <a key="link2">查阅</a>,
-      <a key="link3">删除</a>,
-    ],
-  },
 ];
 
 // 创建者具体数据
