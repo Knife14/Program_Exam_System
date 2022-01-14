@@ -50,7 +50,8 @@ export default {
   'menu.editor.mind': '脑图编辑器',
   'menu.editor.koni': '拓扑编辑器',
   'menu.demo': '样板',
-  'menu.teacher': '教师',
   'menu.TeaExamList': '考试列表',
   'menu.StuExamList': '考试列表',
+  'menu.StuCenter': '个人信息',
+  'menu.TeaCenter': '个人信息',
 };
