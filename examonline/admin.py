@@ -5,6 +5,7 @@ from .models import *
 
 admin.site.register(UserInfo)
 admin.site.register(TestQuestions)
+admin.site.register(AnswerExamples)
 admin.site.register(TestExamples)
 admin.site.register(ExamInfo)
 admin.site.register(StuExamSituation)
