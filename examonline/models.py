@@ -19,7 +19,7 @@ class UserInfo(models.Model):
 
 # 试题表： 针对编程题，本应还有内存限制，但鉴于技术水平限制，暂时舍弃
 class TestQuestions(models.Model):
-    tqID = models.CharField(max_length=15, blank=False, unique=True)  # 试题ID，非空且唯一：年月日时分（12） - xx
+    tqID = models.CharField(max_length=16, blank=False, unique=True)  # 试题ID，非空且唯一：年月日时分（12） - xx
     tqType = models.CharField(max_length=5, blank=False)  # 试题类型，非空：暂时是填空、编码题
     name = models.CharField(max_length=100, blank=False)  # 试题名称，非空
     tags = models.CharField(max_length=100)  # 试题标签：算法、动态规划、数据结构、BFS、DFS等，以;号间隔

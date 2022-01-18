@@ -10,4 +10,5 @@ urlpatterns = [
     path('changeMyself/', views.change_myself, name='changeMyself'),
     path('getMessage/', views.get_message, name='getMessage'),
     path('addProblem/', views.add_problem, name='addProblem'),
+    path('addProgram', views.add_program, name='addProgram'),
 ]

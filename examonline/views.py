@@ -189,12 +189,13 @@ def add_problem(request):
     problem_json = json.loads(request.body.decode('utf-8'))
 
     # 处理数据
+    tqType = problem_json['tqType']
     tqID = \
         str(timezone.now().year) + str(timezone.now().month).rjust(2, '0') + str(timezone.now().day).rjust(2, '0') \
             + str(timezone.now().hour + 8).rjust(2, '0') + str(timezone.now().minute).rjust(2, '0') \
-                + str(random.randint(0, 100)).rjust(2, '0')
+                + str(random.randint(0, 100)).rjust(2, '0') \
+                    + ('1' if tqType == '填空' else '2')
     creator = problem_json['creator']  # 试题创建者ID
-    tqType = problem_json['tqType']
     name = problem_json['name']
     
     tags = list()
@@ -251,5 +252,11 @@ def add_problem(request):
             limitTime=limitTime,
             creator=creator,
         )
+
+    return HttpResponse(status=200)
+
+
+def add_program(request):
+    print(request.body)
 
     return HttpResponse(status=200)
