@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, response
 from django.utils import timezone
 
 from .models import *
@@ -13,6 +13,92 @@ def index(request):
     print(request.body)
 
     return HttpResponse('Test the django project!')
+
+'''
+url: /examonline/login
+use: 检验登录
+http: POST 改
+content: userID / password
+'''
+def login(request):
+    assert request.method == 'POST'
+
+    # 接口数据处理
+    userLogin_json = json.loads(request.body.decode('utf-8'))
+    userID = userLogin_json['username']
+    password = userLogin_json['password']
+
+    # 查询数据库
+    try:
+        currentUSER = list(UserInfo.objects.filter(userID=userID).values()).pop()
+        response = dict()
+
+        if currentUSER['password'] == password:
+            # 登录行为入库，便于后续操作
+            UserEvent.objects.create(
+                userID=userID,
+                eventType='login',
+            )
+
+            # 修改user info表对应用户的登录状态
+            UserInfo.objects.filter(userID=userID).update(is_online=True)
+
+            # request response
+            response['status'] = 'ok'
+            response['type'] = 'account'
+            response['currentAuthority'] = currentUSER['identify']
+
+            return HttpResponse(json.dumps(response), status=200)
+        else:
+            return HttpResponse(status=500)
+    except:
+        return HttpResponse(status=200)
+
+'''
+url: examonline/outLogin
+use: 退出登录
+http: POST
+'''
+def out_login(request):
+    # 数据库记录修正
+    last_login = list(UserEvent.objects.filter(eventType='login').values()).pop()
+    last_outlogin = list(UserEvent.objects.filter(eventType='login').values()).pop()
+
+    return HttpResponse(status=200)
+
+
+'''
+url: /examonline/currentUser
+use: 获取当前用户
+http: GET 查
+content: 
+'''
+def current_user(request):
+    assert request.method == 'GET'
+    response = dict()
+
+    # 登录事件检索
+    event_login = list(UserEvent.objects.filter(eventType='login').values()).pop()
+    
+    userID = event_login['userID']
+
+    # 判断是否是登录态
+    # 若是
+    nlogin_user = list(UserInfo.objects.filter(userID=userID).values()).pop()
+    if nlogin_user['is_online']:
+        if nlogin_user['identify'] == 'student':
+            response['name'] = nlogin_user['name']
+            response['userid'] = nlogin_user['userID']
+            response['email'] = nlogin_user['email']
+            response['college'] = nlogin_user['college']
+            response['major'] = nlogin_user['major']
+            response['phone'] = nlogin_user['telephone']
+            response['access'] = nlogin_user['identify']
+
+        return HttpResponse(json.dumps(response), status=200)
+
+    response['isLogin'] = False
+    return HttpResponse(json.dumps(response), status=401)
 
 '''
 url: /examonline/addUser

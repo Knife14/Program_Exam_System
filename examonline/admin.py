@@ -3,6 +3,7 @@ from .models import *
 
 # Register your models here.
 
+admin.site.register(UserEvent)
 admin.site.register(UserInfo)
 admin.site.register(TestQuestions)
 admin.site.register(AnswerExamples)

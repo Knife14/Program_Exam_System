@@ -3,6 +3,12 @@ from django.db.models.expressions import F
 
 # Create your models here.
 
+# 用户事件表：维护用户登录、退出登录、参加考试、创建题目、创造考试等行为
+class UserEvent(models.Model):
+    userID = models.CharField(max_length=11, blank=False)  # 非空且唯一，ID，不可变
+    eventType = models.CharField(max_length=20, blank=False)  # 事件类型，非空
+    addtime = models.DateTimeField(auto_now_add=True)  # 记录第一次入库的时间
+
 # 用户信息表
 class UserInfo(models.Model):
     identify = models.CharField(max_length=10, blank=False)  # 非空，使用者身份，三种：teacher、student、admin
@@ -16,6 +22,7 @@ class UserInfo(models.Model):
     email = models.EmailField(max_length=100)  # 邮箱
     addtime = models.DateTimeField(auto_now_add=True)  # 记录第一次入库的时间
     changetime = models.DateTimeField(auto_now=True)  # 修改记录的时间
+    is_online = models.BooleanField(default=False, blank=False)  # 是否在线，非空，默认为否
 
 # 试题表： 针对编程题，本应还有内存限制，但鉴于技术水平限制，暂时舍弃
 class TestQuestions(models.Model):
