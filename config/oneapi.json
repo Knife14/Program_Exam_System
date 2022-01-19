@@ -72,7 +72,7 @@
         }
       }
     },
-    "/api/login/outLogin": {
+    "/examonline/outLogin": {
       "post": {
         "description": "登录接口",
         "operationId": "outLogin",
