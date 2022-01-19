@@ -13,7 +13,7 @@
     }
   ],
   "paths": {
-    "/api/currentUser": {
+    "/examonline/currentUser": {
       "get": {
         "tags": ["api"],
         "description": "获取当前的用户",
@@ -102,7 +102,7 @@
       },
       "x-swagger-router-controller": "api"
     },
-    "/api/login/account": {
+    "/examonline/login": {
       "post": {
         "tags": ["login"],
         "description": "登录接口",

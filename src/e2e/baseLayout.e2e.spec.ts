@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const { uniq } = require('lodash');
 const RouterConfig = require('../../config/routes').default;
 
-const BASE_URL = `http://localhost:${process.env.PORT || 8001}`;
+const BASE_URL = `http://localhost:${process.env.PORT || 8888}`;
 
 function formatter(routes: any, parentPath = ''): string[] {
   const fixedParentPath = parentPath.replace(/\/{1,}/g, '/');
