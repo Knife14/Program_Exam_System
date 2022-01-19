@@ -55,16 +55,29 @@ def login(request):
         return HttpResponse(status=200)
 
 '''
-url: examonline/outLogin
+url: examonline/
 use: 退出登录
 http: POST
 '''
 def out_login(request):
     # 数据库记录修正
     last_login = list(UserEvent.objects.filter(eventType='login').values()).pop()
-    last_outlogin = list(UserEvent.objects.filter(eventType='login').values()).pop()
+    last_outlogin = list(UserEvent.objects.filter(eventType='login', userID=last_login['userID']).values()).pop()
 
-    return HttpResponse(status=200)
+    if timezone.now() > last_login['addtime'] and \
+        last_outlogin['addtime'] < last_login['addtime']:
+        UserEvent.objects.create(
+            userID=last_login['userID'],
+            eventType='outlogin',
+        )
+
+        UserInfo.objects.filter(userID=last_login['userID']).update(is_online=False)
+
+    response = dict()
+    response['data'] = dict()
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response), status=200)
 
 
 '''
