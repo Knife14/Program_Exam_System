@@ -31,7 +31,7 @@ export async function getInitialState(): Promise<{
       const msg = await queryCurrentUser();
 
       // test
-      console.log(msg.data);
+      // console.log(msg.data);
 
       return msg.data;
     } catch (error) {
