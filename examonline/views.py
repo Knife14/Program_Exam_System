@@ -86,14 +86,16 @@ def current_user(request):
     # 若是
     nlogin_user = list(UserInfo.objects.filter(userID=userID).values()).pop()
     if nlogin_user['is_online']:
+        response['success'] = True
+        response['data'] = dict()
         if nlogin_user['identify'] == 'student':
-            response['name'] = nlogin_user['name']
-            response['userid'] = nlogin_user['userID']
-            response['email'] = nlogin_user['email']
-            response['college'] = nlogin_user['college']
-            response['major'] = nlogin_user['major']
-            response['phone'] = nlogin_user['telephone']
-            response['access'] = nlogin_user['identify']
+            response['data']['name'] = nlogin_user['name']
+            response['data']['userid'] = nlogin_user['userID']
+            response['data']['email'] = nlogin_user['email']
+            response['data']['college'] = nlogin_user['college']
+            response['data']['major'] = nlogin_user['major']
+            response['data']['phone'] = nlogin_user['telephone']
+            response['data']['access'] = nlogin_user['identify']
 
         return HttpResponse(json.dumps(response), status=200)
 
