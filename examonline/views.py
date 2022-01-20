@@ -62,10 +62,9 @@ http: POST
 def out_login(request):
     # 数据库记录修正
     last_login = list(UserEvent.objects.filter(eventType='login').values()).pop()
-    last_outlogin = list(UserEvent.objects.filter(eventType='login', userID=last_login['userID']).values()).pop()
 
     if timezone.now() > last_login['addtime'] and \
-        last_outlogin['addtime'] < last_login['addtime']:
+        list(UserInfo.objects.filter(userID=last_login['userID']).values('is_online')).pop()['is_online']:
         UserEvent.objects.create(
             userID=last_login['userID'],
             eventType='outlogin',
@@ -360,4 +359,8 @@ def add_problem(request):
 def add_program(request):
     print(request.body)
 
-    return HttpResponse(status=200)
+    response = dict()
+    response['status'] = 'Success'
+    response['content'] = '暂时没有东西'
+
+    return HttpResponse(json.dumps(response), status=200)
