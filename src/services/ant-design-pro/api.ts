@@ -2,9 +2,9 @@
 /* eslint-disable */
 import { request } from 'umi';
 
-/** 添加当次代码 PUT /examonline/addProgram/ */
+/** 添加当次代码 PUT /examonline/addProgram */
 export async function addProgram(body: { [key: string]: any }, options?: { [key: string]: any }) {
-  return request('/examonline/addProgram/', {
+  return request<API.AddProgram>('/examonline/addProgram', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

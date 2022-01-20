@@ -31,6 +31,11 @@ declare namespace API {
     currentAuthority?: string;
   };
 
+  type AddProgram = {
+    status: string;
+    content?: string;
+  };
+
   type PageParams = {
     current?: number;
     pageSize?: number;

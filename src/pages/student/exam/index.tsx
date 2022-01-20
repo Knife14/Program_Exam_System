@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Descriptions, Layout, Radio } from 'antd';
+import { addProgram } from '@/services/ant-design-pro/api';
 
 import Codemirror from './Codemirror';
 
@@ -19,8 +20,13 @@ const tips = '算法时间不得超过1000ms';
 class Index extends React.Component {
   submitCode = () => {
     const values = this.codeRef.getExamValuse();
-    alert(JSON.stringify(values));
-    //这里调用接口
+    
+    // 弹窗代码框内容
+    // alert(JSON.stringify(values));
+    const code_json = JSON.stringify(values);
+
+    // 调用接口
+    const msg = await addProgram({ ...code_json, type});
   };
 
   codeRef: any;
