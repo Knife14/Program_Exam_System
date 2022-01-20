@@ -5,8 +5,11 @@
 import * as pet from './pet';
 import * as store from './store';
 import * as user from './user';
+import * as exam from './exam';
+
 export default {
   pet,
   store,
   user,
+  exam,
 };

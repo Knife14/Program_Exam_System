@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Descriptions, Layout, Radio } from 'antd';
-import { addProgram } from '@/services/ant-design-pro/api';
+import API from '../../../services/swagger';
 
 import Codemirror from './Codemirror';
+import { APIRequest } from 'playwright-core';
 
 // 还需要做防作弊
 
@@ -23,10 +24,20 @@ class Index extends React.Component {
     
     // 弹窗代码框内容
     // alert(JSON.stringify(values));
-    const code_json = JSON.stringify(values);
 
     // 调用接口
-    const msg = await addProgram({ ...code_json, type});
+    API.exam
+      .testProgram(values)
+      .then((re: any) => {
+        // 成功调用
+        if (re.status == 'pass') {
+          alert('运行成功');
+        }
+      })
+      .catch(() => {
+        alert('提交失败，请再次提交！');
+      });
+
   };
 
   codeRef: any;

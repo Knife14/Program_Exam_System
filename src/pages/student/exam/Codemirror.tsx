@@ -30,7 +30,7 @@ const { Option } = Select;
 const CodeMirrorBox = forwardRef((props, ref) => {
   const [code, setCode] = useState('');
   const [setting, setSetting] = useState({
-    type: 'Phyon',
+    type: 'Python',
     mode: 'text/x-python',
   });
 
@@ -39,7 +39,7 @@ const CodeMirrorBox = forwardRef((props, ref) => {
   };
 
   const handleChange = (value: any) => {
-    let param = { type: 'Phyon', mode: 'text/x-python' };
+    let param = { type: 'Python', mode: 'text/x-python' };
     if (value == 'C') {
       param = { type: 'C', mode: 'text/x-csrc' };
     }
@@ -68,8 +68,8 @@ const CodeMirrorBox = forwardRef((props, ref) => {
     <div style={{ width: '100%' }}>
       <div style={{ margin: '10px 0 10px 20px' }}>
         <span>选择语言</span>{' '}
-        <Select defaultValue="Phyon" style={{ width: 120 }} onChange={handleChange}>
-          <Option value="Phyon">Phyon</Option>
+        <Select defaultValue="Python" style={{ width: 120 }} onChange={handleChange}>
+          <Option value="Python">Python</Option>
           <Option value="C">C</Option>
         </Select>
       </div>

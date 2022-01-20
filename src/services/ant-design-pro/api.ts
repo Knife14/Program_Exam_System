@@ -3,16 +3,16 @@
 import { request } from 'umi';
 
 /** 添加当次代码 PUT /examonline/addProgram */
-export async function addProgram(body: { [key: string]: any }, options?: { [key: string]: any }) {
-  return request<API.AddProgram>('/examonline/addProgram', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  });
-}
+// export async function addProgram(body: { [key: string]: any }, options?: { [key: string]: any }) {
+//   return request<API.AddProgram>('/examonline/addProgram', {
+//     method: 'PUT',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     data: body,
+//     ...(options || {}),
+//   });
+// }
 
 /** 登录接口 POST /api/login/account */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {

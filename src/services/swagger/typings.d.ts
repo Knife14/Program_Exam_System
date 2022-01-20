@@ -2,6 +2,11 @@
 /* eslint-disable */
 
 declare namespace API {
+  type TestProgram = {
+    status?: string;
+    content?: string;
+  };
+
   type Order = {
     id?: number;
     petId?: number;
