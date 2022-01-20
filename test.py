@@ -1,9 +1,8 @@
-import hashlib  # md5 加密
+import random
 
-pwd = '123456'
-pwd_md5 = hashlib.md5()
 
-pwd_md5.update(pwd.encode('utf-8'))
+userID = '20184281'
 
-pro_pwd = pwd_md5.hexdigest()
-print(type(pro_pwd), pro_pwd)
+path = '..\\temp_program\\' + userID + '\\'
+with open(path + str(random.randint(0, 10000)) + '.py', 'w', encoding='utf-8' ) as file:
+    file.write('xixi')
