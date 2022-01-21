@@ -2,10 +2,15 @@ from django.shortcuts import render
 from django.http import HttpResponse, response
 from django.utils import timezone
 
+# 引入token
+from .tokenevents import *
+import hashlib  # md5 哈希算法加密 无法破解
+
+# 引入数据库模型
 from .models import *
 
+# python 标准库
 import json
-import time
 import random
 import os
 import subprocess  # 创建新进程，专门用于编译执行代码文件
@@ -36,11 +41,8 @@ def login(request):
         response = dict()
 
         if currentUSER['password'] == password:
-            # 登录行为入库，便于后续操作
-            UserEvent.objects.create(
-                userID=userID,
-                eventType='login',
-            )
+            # 创建token
+            currentUSER_token = create_token(userID)
 
             # 修改user info表对应用户的登录状态
             UserInfo.objects.filter(userID=userID).update(is_online=True)
@@ -49,37 +51,13 @@ def login(request):
             response['status'] = 'ok'
             response['type'] = 'account'
             response['currentAuthority'] = currentUSER['identify']
+            response['token'] = currentUSER_token
 
             return HttpResponse(json.dumps(response), status=200)
         else:
             return HttpResponse(status=500)
     except:
-        return HttpResponse(status=200)
-
-'''
-url: examonline/
-use: 退出登录
-http: POST
-'''
-def out_login(request):
-    # 数据库记录修正
-    last_login = list(UserEvent.objects.filter(eventType='login').values()).pop()
-
-    if timezone.now() > last_login['addtime'] and \
-        list(UserInfo.objects.filter(userID=last_login['userID']).values('is_online')).pop()['is_online']:
-        UserEvent.objects.create(
-            userID=last_login['userID'],
-            eventType='outlogin',
-        )
-
-        UserInfo.objects.filter(userID=last_login['userID']).update(is_online=False)
-
-    response = dict()
-    response['data'] = dict()
-    response['success'] = True
-
-    return HttpResponse(json.dumps(response), status=200)
-
+        return HttpResponse(status=404)
 
 '''
 url: /examonline/currentUser
@@ -91,30 +69,51 @@ def current_user(request):
     assert request.method == 'GET'
     response = dict()
 
-    # 登录事件检索
-    event_login = list(UserEvent.objects.filter(eventType='login').values()).pop()
-    
-    userID = event_login['userID']
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
 
-    # 判断是否是登录态
-    # 若是
-    nlogin_user = list(UserInfo.objects.filter(userID=userID).values()).pop()
-    if nlogin_user['is_online']:
+    if userID and list(UserInfo.objects.filter(userID=userID).values('is_online')).pop()['is_online']:
         response['success'] = True
         response['data'] = dict()
-        if nlogin_user['identify'] == 'student':
-            response['data']['name'] = nlogin_user['name']
-            response['data']['userid'] = nlogin_user['userID']
-            response['data']['email'] = nlogin_user['email']
-            response['data']['college'] = nlogin_user['college']
-            response['data']['major'] = nlogin_user['major']
-            response['data']['phone'] = nlogin_user['telephone']
-            response['data']['access'] = nlogin_user['identify']
 
+        currentUser = list(UserInfo.objects.filter(userID=userID).values()).pop()
+        if currentUser['identify'] == 'student':
+            response['data']['name'] = currentUser['name']
+            response['data']['userid'] = currentUser['userID']
+            response['data']['email'] = currentUser['email']
+            response['data']['college'] = currentUser['college']
+            response['data']['major'] = currentUser['major']
+            response['data']['phone'] = currentUser['telephone']
+            response['data']['access'] = currentUser['identify']
+        
         return HttpResponse(json.dumps(response), status=200)
 
     response['isLogin'] = False
     return HttpResponse(json.dumps(response), status=401)
+
+'''
+url: examonline/outLogin
+use: 退出当前用户
+http: POST
+'''
+def out_login(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 修改user info表对应用户的登录状态 
+    UserInfo.objects.filter(userID=userID).update(is_online=False)
+
+    response['data'] = dict()
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response), status=200)
 
 '''
 url: /examonline/addUser

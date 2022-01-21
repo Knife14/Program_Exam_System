@@ -4,8 +4,8 @@ import hashlib
 from django.core.cache import cache
  
 HEADER = {'typ': 'JWP', 'alg': 'default'}
-KEY = 'CHEN_FENG_YAO'
-SALT = 'www.lanou3g.com'
+KEY = 'userID'
+SALT = '127.0.0.1'
 TIME_OUT = 30 * 60  # 30min
  
  
@@ -20,7 +20,10 @@ def decrypt(src):
     """解密"""
     src = signing.b64_decode(src.encode()).decode()
     raw = signing.loads(src, key=KEY, salt=SALT)
-    print(type(raw))
+    
+    # test
+    # print(type(raw))
+    
     return raw
  
  
@@ -29,7 +32,7 @@ def create_token(username):
     # 1. 加密头信息
     header = encrypt(HEADER)
     # 2. 构造Payload
-    payload = {"username": username, "iat": time.time()}
+    payload = {"userID": username, "iat": time.time()}
     payload = encrypt(payload)
     # 3. 生成签名
     md5 = hashlib.md5()
@@ -50,8 +53,7 @@ def get_payload(token):
 # 通过token获取用户名
 def get_username(token):
     payload = get_payload(token)
-    return payload['username']
-    pass
+    return payload['userID']
  
  
 def check_token(token):
