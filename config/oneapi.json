@@ -299,6 +299,14 @@
   },
   "components": {
     "schemas": {
+      "NothingResponse":{
+        "type": "object",
+        "properties":{
+          "status": {
+            "type": "string"
+          }
+        }
+      },
       "CurrentUser": {
         "type": "object",
         "properties": {
@@ -383,6 +391,12 @@
           },
           "phone": {
             "type": "string"
+          },
+          "college": {
+            "type": "string"
+          },
+          "major": {
+            "type": "string"
           }
         }
       },
@@ -396,6 +410,9 @@
             "type": "string"
           },
           "currentAuthority": {
+            "type": "string"
+          },
+          "token": {
             "type": "string"
           }
         }

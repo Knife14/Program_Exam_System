@@ -2,6 +2,10 @@
 /* eslint-disable */
 
 declare namespace API {
+  type NothingResponse = {
+    status?: string;
+  };
+
   type CurrentUser = {
     name?: string;
     avatar?: string;
