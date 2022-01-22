@@ -79,12 +79,26 @@ def current_user(request):
         response['data'] = dict()
 
         currentUser = list(UserInfo.objects.filter(userID=userID).values()).pop()
+        # 身份区别
         if currentUser['identify'] == 'student':
             response['data']['name'] = currentUser['name']
             response['data']['userid'] = currentUser['userID']
             response['data']['email'] = currentUser['email']
             response['data']['college'] = currentUser['college']
             response['data']['major'] = currentUser['major']
+            response['data']['phone'] = currentUser['telephone']
+            response['data']['access'] = currentUser['identify']
+        elif currentUser['identify'] == 'teacher':
+            response['data']['name'] = currentUser['name']
+            response['data']['userid'] = currentUser['userID']
+            response['data']['email'] = currentUser['email']
+            response['data']['college'] = currentUser['college']
+            response['data']['phone'] = currentUser['telephone']
+            response['data']['access'] = currentUser['identify']
+        elif currentUser['identify'] == 'admin':
+            response['data']['name'] = currentUser['name']
+            response['data']['userid'] = currentUser['userID']
+            response['data']['email'] = currentUser['email']
             response['data']['phone'] = currentUser['telephone']
             response['data']['access'] = currentUser['identify']
         
@@ -113,6 +127,38 @@ def out_login(request):
     response['data'] = dict()
     response['success'] = True
 
+    return HttpResponse(json.dumps(response), status=200)
+
+'''
+url: /examonline/changeMyself
+use: 用于用户本人修改个人信息
+http: post 改
+content: userID / password / telephone / email
+'''
+def change_myself(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 处理 request body
+    userInfo_json = json.loads(request.body.decode('utf-8'))
+    telephone = userInfo_json['phone']
+    email = userInfo_json['email']
+
+    # 查询用户记录，并且进行信息更新
+    currUser = UserInfo.objects.filter(userID=userID)
+    currUser.update(
+        telephone=telephone,
+        email=email,
+        changetime=timezone.now(),
+    )
+
+    # 返回
+    response['status'] = 'ok'
     return HttpResponse(json.dumps(response), status=200)
 
 '''
@@ -220,64 +266,6 @@ def change_user(request):
         )
 
     return HttpResponse(status=200)
-
-
-'''
-url: /examonline/changeMyself
-use: 用于用户本人修改个人信息
-http: post 改
-content: userID / password / telephone / email
-'''
-def change_myself(request):
-    assert request.method == 'POST'
-    userInfo_json = json.loads(request.body.decode('utf-8'))
-
-    # 查询用户记录
-    userID = userInfo_json['userID']
-    currUser = UserInfo.objects.filter(userID=userID)
-
-    password = userInfo_json['password']
-    telephone = userInfo_json['telephone']
-    email = userInfo_json['email']
-
-    # 数据库更新
-    currUser.update(
-        password=password,
-        telephone=telephone,
-        email=email,
-        changetime=timezone.now(),
-    )
-
-    return HttpResponse(status=200)
-
-'''
-url: /examonline/getMessage
-use: 用于展示个人信息
-http: get 查
-content: userID / identify
-'''
-def get_message(request):
-    assert request.method == 'GET'
-    
-    userInfo_json = json.loads(request.body.decode('utf-8'))
-    userID = userInfo_json['userID']
-    identify = userInfo_json['identify']
-
-    # 数据库查询
-    currUser = list(UserInfo.objects.filter(identify=identify, userID=userID).values()).pop()
-
-    # 反馈
-    response = dict()
-    response['userID'] = currUser['userID']
-    response['password'] = currUser['password']
-    response['name'] = currUser['name']
-    response['college'] = currUser['college']
-    response['telephone'] = currUser['telephone']
-    response['email'] = currUser['email']
-    if identify == 'student':
-        response['major'] = currUser['major']
-
-    return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 '''
 url: /examonline/addProblem
