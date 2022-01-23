@@ -205,59 +205,96 @@ content: identify / userID / password / name / college / major
 '''
 def add_user(request):
     assert request.method == 'PUT'
-    userInfo_json = json.loads(request.body.decode('utf-8'))
+    response = dict()
 
-    # 根据身份分类处理
-    identify = userInfo_json['identify']
-    userID = userInfo_json['userID']
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    admin_ID = get_username(request_token)
 
-    # 若添加的userID重复
-    if UserInfo.objects.filter(userID=userID):
-        return HttpResponse(status=500)
+    if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
+        print('in')
+        # 处理 request body
+        userInfo_json = json.loads(request.body.decode('utf-8'))
+        # 根据身份分类处理
+        identify = userInfo_json['identify']
+        userID = userInfo_json['userID']
 
-    password = userInfo_json['password']
-    name = userInfo_json['name']
-    # 如果是管理者身份
-    if identify == 'admin':
-        # 直接存入数据库
-        new_user = UserInfo(
-            identify=identify,
-            userID=userID,
-            password=password,
-            name=name,
-            changetime=timezone.now(),
-        )
-        new_user.save()
-    elif identify == 'teacher':
-        college = userInfo_json['college']
+        # 若添加的userID重复
+        if UserInfo.objects.filter(userID=userID):
+            response['status'] = 'error'
+            return HttpResponse(json.dumps(response), status=500)
+
+        password = userInfo_json['password']
+        name = userInfo_json['name']
+        # 如果是管理者身份
+        if identify == 'admin':
+            # 直接存入数据库
+            new_user = UserInfo(
+                identify=identify,
+                userID=userID,
+                password=password,
+                name=name,
+                changetime=timezone.now(),
+            )
+            new_user.save()
+        elif identify == 'teacher':
+            ex_college = userInfo_json['college']
+            if ex_college == 'computer':
+                college = '计算机学院'
+            elif ex_college == 'software':
+                college = '软件学院'
+            else:
+                college = '其他学院'
+            
+            # 存入数据库
+            new_user = UserInfo(
+                identify=identify,
+                userID=userID,
+                password=password,
+                name=name,
+                college=college,
+                changetime=timezone.now(),
+            )
+            new_user.save()
+        elif identify == 'student':
+            ex_college = userInfo_json['college']
+            if ex_college == 'computer':
+                college = '计算机学院'
+            elif ex_college == 'software':
+                college = '软件学院'
+            else:
+                college = '其他学院'
+            
+            ex_major = userInfo_json['major']
+            if ex_major == 'csplus':
+                major = '计算机科学与技术（卓越班）'
+            elif ex_major == 'cs':
+                major = '计算机科学与技术'
+            elif ex_major == 'iot':
+                major = '物联网工程'
+            elif ex_major == 'is':
+                major = '信息安全'
+            else:
+                major = '其他专业'
+
+            # 存入数据库
+            new_user = UserInfo(
+                identify=identify,
+                userID=userID,
+                password=password,
+                name=name,
+                college=college,
+                major=major,
+                changetime=timezone.now(),
+            )
+            new_user.save()
         
-        # 存入数据库
-        new_user = UserInfo(
-            identify=identify,
-            userID=userID,
-            password=password,
-            name=name,
-            college=college,
-            changetime=timezone.now(),
-        )
-        new_user.save()
-    elif identify == 'student':
-        college = userInfo_json['college']
-        major = userInfo_json['major']
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
 
-        # 存入数据库
-        new_user = UserInfo(
-            identify=identify,
-            userID=userID,
-            password=password,
-            name=name,
-            college=college,
-            major=major,
-            changetime=timezone.now(),
-        )
-        new_user.save()
-
-    return HttpResponse(status=200)
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=500)
 
 '''
 url: /examonline/changeUser
