@@ -16,7 +16,12 @@ const Welcome: React.FC = () => {
   const intl = useIntl();
 
   return (
-    <PageContainer>
+    <PageContainer style={{color:'gray', textAlign: 'center', fontSize: 40}}>
+      <br />
+      <br />
+      欢迎使用本在线考试系统！
+      <br />
+      希望您有一个顺利的使用过程！
     </PageContainer>
   );
 };

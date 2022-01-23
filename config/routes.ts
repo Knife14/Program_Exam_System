@@ -69,10 +69,17 @@
   //   component: './demo/',
   // },
   {
+    name: 'UserList',
+    path: '/admin/UserList',
+    icon: 'unorderedList',
+    access: 'canAdmin',
+    component: './admin/userList',
+  },
+  {
     name: 'TeaExamList',
     path: '/teacher/ExamList',
     icon: 'code',
-    access: 'canTeacher',
+    access: 'canTeacher' && 'canAdmin',
     component: './teacher/TeaExamList',
   },
   {

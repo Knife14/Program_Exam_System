@@ -51,7 +51,17 @@ export async function changeMyself(body: { [key: string]: any}, options?: { [key
   });
 }
 
-/** 获取 */
+/** 获取所有用户 GET /examonline/getUsers */
+export async function getUsers(options?: { [key: string]: any }) {
+  return request<any>('/examonline/getUsers', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'GET',
+    ...(options || {}),
+  });
+}
 
 /** 此处后端没有提供注释 GET /api/notices */
 // export async function getNotices(options?: { [key: string]: any }) {

@@ -54,4 +54,5 @@ export default {
   'menu.StuExamList': '考试列表',
   'menu.StuCenter': '个人信息',
   'menu.TeaCenter': '个人信息',
+  'menu.UserList': '用户列表',
 };
