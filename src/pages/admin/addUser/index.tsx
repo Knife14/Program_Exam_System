@@ -13,14 +13,6 @@ import ProForm, {
 } from '@ant-design/pro-form';
 import { addUser } from '../../../services/ant-design-pro/api';
 
-export const waitTime = (time: number = 100) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, time);
-  });
-};
-
 const Demo = () => (
   <div
     style={{

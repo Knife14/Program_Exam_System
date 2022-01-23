@@ -63,7 +63,7 @@ export async function getUsers(options?: { [key: string]: any }) {
   });
 }
 
-/** 获取所有用户 PUT /examonline/addUser */
+/** 添加用户 PUT /examonline/addUser */
 export async function addUser(body: any, options?: { [key: string]: any }) {
   return request<API.NothingResponse>('/examonline/addUser', {
     headers:{
@@ -76,54 +76,28 @@ export async function addUser(body: any, options?: { [key: string]: any }) {
   });
 }
 
-/** 此处后端没有提供注释 GET /api/notices */
-// export async function getNotices(options?: { [key: string]: any }) {
-//   return request<API.NoticeIconList>('/api/notices', {
-//     method: 'GET',
-//     ...(options || {}),
-//   });
-// }
+/** 获取该名用户信息 POST /examonline/gettheUser */
+export async function gettheUser(body: any, options?: { [key: string]: any }) {
+  return request<API.CurrentUser>('/examonline/gettheUser', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    data: body,
+    method: 'POST',
+    ...(options || {}),
+  });
+}
 
-/** 获取规则列表 GET /api/rule */
-// export async function rule(
-//   params: {
-//     // query
-//     /** 当前的页码 */
-//     current?: number;
-//     /** 页面的容量 */
-//     pageSize?: number;
-//   },
-//   options?: { [key: string]: any },
-// ) {
-//   return request<API.RuleList>('/api/rule', {
-//     method: 'GET',
-//     params: {
-//       ...params,
-//     },
-//     ...(options || {}),
-//   });
-// }
-
-/** 新建规则 PUT /api/rule */
-// export async function updateRule(options?: { [key: string]: any }) {
-//   return request<API.RuleListItem>('/api/rule', {
-//     method: 'PUT',
-//     ...(options || {}),
-//   });
-// }
-
-/** 新建规则 POST /api/rule */
-// export async function addRule(options?: { [key: string]: any }) {
-//   return request<API.RuleListItem>('/api/rule', {
-//     method: 'POST',
-//     ...(options || {}),
-//   });
-// }
-
-/** 删除规则 DELETE /api/rule */
-// export async function removeRule(options?: { [key: string]: any }) {
-//   return request<Record<string, any>>('/api/rule', {
-//     method: 'DELETE',
-//     ...(options || {}),
-//   });
-// }
+/** 获取该名用户信息 POST /examonline/changeUser */
+export async function changeUser(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/changeUser', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    data: body,
+    method: 'POST',
+    ...(options || {}),
+  });
+}

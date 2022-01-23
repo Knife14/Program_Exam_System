@@ -21,7 +21,16 @@ const columns: ProColumns<TableListItem>[] = [
     title: '名称',
     width: 100,
     dataIndex: 'name',
-    render: (_) => <Link target = "_blank" to="">{_}</Link>,
+    render: (_, record) => {
+      return (
+        <Link 
+          target = "_blank" 
+          to = {`./changeInfo?userid=${record.userid}`}
+        >
+          {_}
+        </Link>
+      );
+    },
   },
   {
     title: '身份',

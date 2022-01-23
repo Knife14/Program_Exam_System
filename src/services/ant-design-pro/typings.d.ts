@@ -27,6 +27,7 @@ declare namespace API {
     phone?: string;
     college?: string;
     major?: string;
+    password?: string;
   };
 
   type LoginResult = {

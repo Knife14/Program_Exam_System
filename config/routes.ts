@@ -81,6 +81,11 @@
     component: './admin/addUser',
   },
   {
+    path: '/admin/ChangeInfo',
+    access: 'canAdmin',
+    component: './admin/ChangeInfo',
+  },
+  {
     name: 'TeaExamList',
     path: '/teacher/ExamList',
     icon: 'code',
