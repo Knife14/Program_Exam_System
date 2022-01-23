@@ -60,7 +60,7 @@ const columns: ProColumns<TableListItem>[] = [
   },
   {
     title: '专业',
-    width: 80,
+    width: 100,
     dataIndex: 'major', 
     filters: [
       { text: '计算机科学与技术（卓越班）', value: '计算机科学与技术（卓越班）' },
@@ -114,9 +114,9 @@ export default () => {
       search={false}
       dateFormatter="string"
       toolBarRender={() => [
-        <Button type="primary" key="primary">
+        <Link target = "_blank" to="./addUser"><Button type="primary" key="primary">
           创建用户
-        </Button>,
+        </Button></Link>,
       ]}
     />
   );

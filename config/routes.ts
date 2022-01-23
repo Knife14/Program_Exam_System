@@ -76,6 +76,11 @@
     component: './admin/userList',
   },
   {
+    path: '/admin/AddUser',
+    access: 'canAdmin',
+    component: './admin/addUser',
+  },
+  {
     name: 'TeaExamList',
     path: '/teacher/ExamList',
     icon: 'code',

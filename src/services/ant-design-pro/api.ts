@@ -63,6 +63,19 @@ export async function getUsers(options?: { [key: string]: any }) {
   });
 }
 
+/** 获取所有用户 PUT /examonline/addUser */
+export async function addUser(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/addUser', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    data: body,
+    method: 'PUT',
+    ...(options || {}),
+  });
+}
+
 /** 此处后端没有提供注释 GET /api/notices */
 // export async function getNotices(options?: { [key: string]: any }) {
 //   return request<API.NoticeIconList>('/api/notices', {
