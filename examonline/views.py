@@ -133,7 +133,7 @@ def out_login(request):
 url: /examonline/changeMyself
 use: 用于用户本人修改个人信息
 http: post 改
-content: userID / password / telephone / email
+content: telephone / email
 '''
 def change_myself(request):
     assert request.method == 'POST'
@@ -296,6 +296,46 @@ def add_user(request):
     response['status'] = 'error'
     return HttpResponse(json.dumps(response), status=500)
 
+
+'''
+url: /examonline/gettheUser
+use: 用于向管理者展示当前用户的所有信息
+http: POST 查
+content: userID
+'''
+def get_theUser(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    admin_ID = get_username(request_token)
+
+    if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
+        userID = request.body.decode('utf-8')
+        theUser = UserInfo.objects.get(userID=userID)
+        
+        response['success'] = True
+        response['data'] = dict()
+
+        response['data']['name'] = theUser.name
+        response['data']['userid'] = theUser.userID
+        response['data']['access'] = theUser.identify
+        response['data']['email'] = theUser.email
+        response['data']['phone'] = theUser.telephone
+        response['data']['password'] = theUser.password
+        if theUser.identify == 'student':
+            response['data']['college'] = theUser.college
+            response['data']['major'] = theUser.major
+        elif theUser.identify == 'teacher':
+            response['data']['college'] = theUser.college
+
+        return HttpResponse(json.dumps(response), status=200)
+
+    response['isLogin'] = False
+    return HttpResponse(json.dumps(response), status=500)
+
 '''
 url: /examonline/changeUser
 use: 用于管理者修改各种不同用户
@@ -304,41 +344,68 @@ content: userID / identify / password / name / college / major
 '''
 def change_user(request):
     assert request.method == 'POST'
-    userInfo_json = json.loads(request.body.decode('utf-8'))
+    response = dict()
 
-    # 查询用户记录
-    userID = userInfo_json['userID']
-    currUser = UserInfo.objects.filter(userID=userID)
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    admin_ID = get_username(request_token)
 
-    identify = userInfo_json['identify']
-    password = userInfo_json['password']
-    name = userInfo_json['name']
-    if identify == 'teacher':
-        college = userInfo_json['college']
-        
-        # 数据库更新
-        currUser.update(
-            identify=identify,
-            password=password,
-            name=name,
-            college=college,
-            changetime=timezone.now(),
-        )
-    elif identify == 'student':
-        college = userInfo_json['college']
-        major = userInfo_json['major']
-        
-        # 数据库更新
-        currUser.update(
-            identify=identify,
-            password=password,
-            name=name,
-            college=college,
-            major=major,
-            changetime=timezone.now(),
-        )
+    if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
+        userInfo_json = json.loads(request.body.decode('utf-8'))
+        # 查询用户记录
+        userID = userInfo_json['userID']
+        currUser = UserInfo.objects.filter(userID=userID)
 
-    return HttpResponse(status=200)
+        identify = userInfo_json['identify']
+        password = userInfo_json['password']
+        name = userInfo_json['name']
+        telephone = userInfo_json['phone'] if userInfo_json['phone'] else ''
+        email = userInfo_json['email'] if userInfo_json['email'] else ''
+        if identify == 'teacher':
+            college = userInfo_json['college']
+            
+            # 数据库更新
+            currUser.update(
+                identify=identify,
+                password=password,
+                name=name,
+                college=college,
+                email=email,
+                telephone=telephone,
+                changetime=timezone.now(),
+            )
+        elif identify == 'student':
+            college = userInfo_json['college']
+            major = userInfo_json['major']
+            
+            # 数据库更新
+            currUser.update(
+                identify=identify,
+                password=password,
+                name=name,
+                college=college,
+                major=major,
+                email=email,
+                telephone=telephone,
+                changetime=timezone.now(),
+            )
+        else:
+            # 数据库更新
+            currUser.update(
+                identify=identify,
+                password=password,
+                name=name,
+                email=email,
+                telephone=telephone,
+                changetime=timezone.now(),
+            )
+
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=500)
 
 '''
 url: /examonline/addProblem
