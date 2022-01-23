@@ -184,12 +184,7 @@ def get_users(request):
             tmp = dict()
 
             tmp['name'] = user['name']
-            if user['identify'] == 'student':
-                tmp['identify'] = '学生'
-            elif user['identify'] == 'admin':
-                tmp['identify'] = '管理员'
-            elif user['identify'] == 'teacher':
-                tmp['identify'] = '教师'
+            tmp['identify'] = user['identify']
             tmp['userid'] = user['userID']
             tmp['college'] = user['college']
             tmp['major'] = user['major']
