@@ -162,6 +162,47 @@ def change_myself(request):
     return HttpResponse(json.dumps(response), status=200)
 
 '''
+url: /examonline/getUsers
+use: 展示所有用户
+http: GET 查
+'''
+def get_users(request):
+    assert request.method == 'GET'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if list(UserInfo.objects.filter(userID=userID).values('identify')).pop()['identify'] == 'admin':
+        all_users = list(UserInfo.objects.filter().values())
+
+        # 数据库日期类型不可被json转换
+        response['data'] = list()
+        for user in all_users:
+            tmp = dict()
+
+            tmp['name'] = user['name']
+            if user['identify'] == 'student':
+                tmp['identify'] = '学生'
+            elif user['identify'] == 'admin':
+                tmp['identify'] = '管理员'
+            elif user['identify'] == 'teacher':
+                tmp['identify'] = '教师'
+            tmp['userid'] = user['userID']
+            tmp['college'] = user['college']
+            tmp['major'] = user['major']
+
+            response['data'].append(tmp)
+        
+        response['success'] = True
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['success'] = False
+    return HttpResponse(json.dumps(response), status=500)
+
+'''
 url: /examonline/addUser
 use: 用于管理者增加各种身份的不同用户
 http: put 增
