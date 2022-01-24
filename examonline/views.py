@@ -1,3 +1,4 @@
+from typing import Collection
 from django.shortcuts import render
 from django.http import HttpResponse, response
 from django.utils import timezone
@@ -321,15 +322,17 @@ def get_theUser(request):
 
         response['data']['name'] = theUser.name
         response['data']['userid'] = theUser.userID
-        response['data']['access'] = theUser.identify
+        response['data']['identify'] = '管理员'
         response['data']['email'] = theUser.email
         response['data']['phone'] = theUser.telephone
         response['data']['password'] = theUser.password
         if theUser.identify == 'student':
             response['data']['college'] = theUser.college
             response['data']['major'] = theUser.major
+            response['data']['identify'] = '学生'
         elif theUser.identify == 'teacher':
             response['data']['college'] = theUser.college
+            response['data']['identify'] = '教师'
 
         return HttpResponse(json.dumps(response), status=200)
 
@@ -357,53 +360,71 @@ def change_user(request):
         userID = userInfo_json['userID']
         currUser = UserInfo.objects.filter(userID=userID)
 
-        identify = userInfo_json['identify']
-        password = userInfo_json['password']
-        name = userInfo_json['name']
-        telephone = userInfo_json['phone'] if userInfo_json['phone'] else ''
-        email = userInfo_json['email'] if userInfo_json['email'] else ''
-        if identify == 'teacher':
-            college = userInfo_json['college']
-            
-            # 数据库更新
-            currUser.update(
-                identify=identify,
-                password=password,
-                name=name,
-                college=college,
-                email=email,
-                telephone=telephone,
-                changetime=timezone.now(),
-            )
-        elif identify == 'student':
-            college = userInfo_json['college']
-            major = userInfo_json['major']
-            
-            # 数据库更新
-            currUser.update(
-                identify=identify,
-                password=password,
-                name=name,
-                college=college,
-                major=major,
-                email=email,
-                telephone=telephone,
-                changetime=timezone.now(),
-            )
-        else:
-            # 数据库更新
-            currUser.update(
-                identify=identify,
-                password=password,
-                name=name,
-                email=email,
-                telephone=telephone,
-                changetime=timezone.now(),
-            )
+        for info_k, info_v in userInfo_json.items():
+            if info_k == 'userID':
+                pass
+            elif info_k == 'password':
+                currUser.update(password=info_v)
+            elif info_k == 'college':
+                if info_v == 'computer':
+                    college = '计算机学院'
+                elif info_v == 'software':
+                    college = '软件学院'
+                else:
+                    college = '其他学院'
+
+                currUser.update(college=college)
+            elif info_k == 'major':
+                if info_v == 'csplus':
+                    major = '计算机科学与技术（卓越班）'
+                elif info_v == 'cs':
+                    major = '计算机科学与技术'
+                elif info_v == 'iot':
+                    major = '物联网工程'
+                elif info_v == 'is':
+                    major = '信息安全'
+                else:
+                    major = '其他专业'
+
+                currUser.update(major=major)
+            elif info_k == 'phone':
+                currUser.update(telephone=info_v)
+            elif info_k == 'email':
+                currUser.update(email=info_v)
 
         response['status'] = 'ok'
         return HttpResponse(json.dumps(response), status=200)
     
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=500)
+
+
+'''
+url: /examonline/deleteUser
+use: 用于管理者删除用户
+http: post 改
+content: userID 
+'''
+def delete_user(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    admin_ID = get_username(request_token)
+
+    if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
+        userID = request.body.decode('utf-8')
+
+        currUser = UserInfo.objects.filter(userID=userID)
+
+        currUser.delete()
+
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
+
+
     response['status'] = 'error'
     return HttpResponse(json.dumps(response), status=500)
 
