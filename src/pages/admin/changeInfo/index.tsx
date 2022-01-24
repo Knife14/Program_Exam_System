@@ -60,7 +60,7 @@ const Index = () => {
             name="changeInfo"
             onFinish={async (value) => {
                 value['userID'] = userData['userid'];
-                console.log(value);
+                // console.log(value);
 
                 let msg = await changeUser(value);
                 if (msg.status === 'ok') {

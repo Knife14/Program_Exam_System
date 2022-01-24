@@ -83,7 +83,12 @@
   {
     path: '/admin/ChangeInfo',
     access: 'canAdmin',
-    component: './admin/ChangeInfo',
+    component: './admin/changeInfo',
+  },
+  {
+    path: '/admin/DeleteUser',
+    access: 'canAdmin',
+    component: './admin/deleteUser',
   },
   {
     name: 'TeaExamList',

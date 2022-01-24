@@ -99,7 +99,7 @@ const columns: ProColumns<TableListItem>[] = [
     valueType: 'option',
     render: (_, record) => [
         <Link target = "_blank" to = {`./changeInfo?userid=${record.userid}`}>编辑</Link>,
-        <Link target = "_blank" to = {`./changeInfo?userid=${record.userid}`}>删除</Link>,
+        <Link target = "_blank" to = {`./deleteUser?userid=${record.userid}`}>删除</Link>,
       ],
   },
 ];
