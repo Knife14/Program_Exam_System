@@ -3,7 +3,20 @@ import { Button } from 'antd';
 import { Link } from 'umi';
 import { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable, { TableDropdown } from '@ant-design/pro-table';
-import { getUsers } from '../../../services/ant-design-pro/api';
+import { getUsers, deleteUser } from '../../../services/ant-design-pro/api';
+import user from 'mock/user';
+
+// 删除用户
+const letDelete = async (userid) =>{
+  console.log(userid);
+  // let msg = await deleteUser(userid);
+
+  // if (msg.status === 'ok') {
+  //   alert('编辑成功！');
+  // } else {
+  //   alert('编辑失败！');
+  // }
+};
 
 // 表格列配置
 export type TableListItem = {
@@ -44,11 +57,11 @@ const columns: ProColumns<TableListItem>[] = [
     onFilter: (value, record) => record.identify == value,
     render: (identify) => {
       if (identify === 'student')
-        return <p>学生</p>
+        return '学生'
       else if (identify === 'teacher')
-        return <p>教师</p>
+        return '教师'
       else if (identify === 'admin')
-        return <p>管理员</p>
+        return '管理员'
     },
   },
   {
@@ -81,13 +94,13 @@ const columns: ProColumns<TableListItem>[] = [
   },
   {
     title: '操作',
-    width: 100,
+    width: 50,
     key: 'option',
     valueType: 'option',
-    render: () => [
-      <a key="link">编辑</a>,
-      <a key="link3">删除</a>,
-    ],
+    render: (_, record) => [
+        <Link target = "_blank" to = {`./changeInfo?userid=${record.userid}`}>编辑</Link>,
+        <Link target = "_blank" to = {`./changeInfo?userid=${record.userid}`}>删除</Link>,
+      ],
   },
 ];
 

@@ -11,7 +11,9 @@ import ProForm, {
   ProFormGroup,
   ProFormDigitRange,
   FormInstance,
+  ProFormContext,
 } from '@ant-design/pro-form';
+import { Tooltip } from 'antd';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { useLocation } from 'umi';
 import { gettheUser, changeUser } from '../../../services/ant-design-pro/api';
@@ -46,19 +48,8 @@ const Index = () => {
     var msg = await gettheUser(userID);
 
     SetData(msg['data']);
-
-    // formRef.current?.setFieldsValue(userData);
   }, []);
 
-  // const FormRef = useRef<FormInstance>(null);
-
-
-    // 'name': userData['name'],
-    // 'identify': userData['access'],
-    // 'phone': userData['phone'],
-    // 'email': userData['email'],
-    // 'password': userData['password'],
-    // 'userid': userData['userid'],
   return (
     <div
         style={{
@@ -68,6 +59,9 @@ const Index = () => {
         <ProForm
             name="changeInfo"
             onFinish={async (value) => {
+                value['userID'] = userData['userid'];
+                console.log(value);
+
                 let msg = await changeUser(value);
                 if (msg.status === 'ok') {
                     alert('编辑成功！');
@@ -75,50 +69,37 @@ const Index = () => {
                     alert('编辑失败！');
                 }
             }}
-            formRef={formRef}
+            // formRef={formRef}
             >
             <ProFormGroup label="编辑用户">
             </ProFormGroup>
             <ProFormText 
                 width="md" 
                 name="name" 
-                label="名称" 
+                label={"名称：" + userData['name']}
                 // value={userData['name']}
-                rules={[{ required: true, message: '请输入用户名称！' }]}
+                // rules={[{ required: true, message: '请输入用户名称！' }]}
             />
             <ProFormText.Password
                 width="md" 
                 name="password" 
-                label="密码" 
+                label={"密码：" + userData['password']}
                 // value={userData['password']}
-                rules={[{ required: true, message: '请输入用户密码！'}]}
+                // rules={[{ required: true, message: '请输入用户密码！'}]}
                 tooltip="默认初始密码为：123456"
             />
-            <ProFormSelect
-                width="md"
-                name="identify"
-                label="身份"
-                valueEnum={{
-                    student: '学生',
-                    teacher: '教师',
-                    admin: '管理员',
-                }}
-                // value={userData['access']}
-                placeholder="请选择一个用户身份"
-                rules={[{ required: true, message: '请选择一个用户身份！' }]}
-            />
-            <ProFormText
-                width="md" 
-                name="userID" 
-                label="编号" 
-                // value={userData['userid']}
-                rules={[{ required: true, message: '请输入对应编号！'}]}
-                tooltip="学生（年份 - xxxx）教师（年份 - xxx（学院）- xxx）管理员（1900 - xxxx）"
-            />
+            <ProFormGroup>
+              <Tooltip title="一般情况下无法修改用户身份，若升学、学生转教职工，可以新增一条用户记录">
+                <span>身份： {userData['identify']}<br /><br /></span>
+              </Tooltip>
+              <Tooltip title="一般情况下无法修改用户编号，若升学、学生转教职工，可以新增一条用户记录">
+                <span>编号： {userData['userid']}<br /><br /></span>
+              </Tooltip>
+            </ProFormGroup>
             <ProFormSelect
                 width="md" 
                 name="college" 
-                label="学院" 
+                label={"学院： " + userData['college']}
                 placeholder="学生与教师用户必填！"
                 valueEnum={{
                     computer: '计算机学院',
@@ -131,7 +112,7 @@ const Index = () => {
             <ProFormSelect
                 width="md" 
                 name="major" 
-                label="专业" 
+                label={"专业： " + userData['major']}
                 placeholder="学生用户必填！"
                 valueEnum={{
                     csplus: '计算机科学与技术（卓越班）',
@@ -146,14 +127,14 @@ const Index = () => {
             <ProFormText
                 width="md" 
                 name="phone" 
-                label="联系方式" 
+                label={"联系方式： " + userData['phone']}
                 // value={userData['phone']}
 
             />
             <ProFormText
                 width="md" 
                 name="email" 
-                label="联系邮箱" 
+                label={"联系邮箱： " + userData['email']}
                 // value={userData['email']}
 
             />

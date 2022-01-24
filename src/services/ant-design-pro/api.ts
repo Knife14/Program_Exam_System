@@ -101,3 +101,16 @@ export async function changeUser(body: any, options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 获取该名用户信息 POST /examonline/deleteUser */
+export async function deleteUser(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/deleteUser', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    data: body,
+    method: 'POST',
+    ...(options || {}),
+  });
+}

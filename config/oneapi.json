@@ -400,6 +400,9 @@
           },
           "password":{
             "type": "string"
+          },
+          "identify":{
+            "type": "string"
           }
         }
       },
