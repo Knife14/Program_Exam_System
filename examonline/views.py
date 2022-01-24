@@ -415,11 +415,9 @@ def delete_user(request):
     admin_ID = get_username(request_token)
 
     if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
-        userID = request.body.decode('utf-8')
+        userID = json.loads(request.body.decode('utf-8'))['userID']
 
-        currUser = UserInfo.objects.filter(userID=userID)
-
-        currUser.delete()
+        UserInfo.objects.filter(userID=userID).delete()        
 
         response['status'] = 'ok'
         return HttpResponse(json.dumps(response), status=200)
