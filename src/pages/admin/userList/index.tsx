@@ -4,7 +4,6 @@ import { Link } from 'umi';
 import { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable, { TableDropdown } from '@ant-design/pro-table';
 import { getUsers, deleteUser } from '../../../services/ant-design-pro/api';
-import user from 'mock/user';
 
 // 删除用户
 const letDelete = async (userid) =>{

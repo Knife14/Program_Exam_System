@@ -91,8 +91,20 @@
     component: './admin/deleteUser',
   },
   {
-    name: 'TeaExamList',
-    path: '/teacher/ExamList',
+    name: 'ProList',
+    path: '/ProList',
+    icon: 'plus',
+    access: 'canTeacher' && 'canAdmin',
+    component: './problems/problemsList',
+  },
+  {
+    path: '/addProblem',
+    access: 'canTeacher' && 'canAdmin',
+    component: './problems/addProblem',
+  },
+  {
+    name: 'ExamList',
+    path: '/ExamList',
     icon: 'code',
     access: 'canTeacher' && 'canAdmin',
     component: './teacher/TeaExamList',
