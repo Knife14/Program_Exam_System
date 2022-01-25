@@ -326,13 +326,16 @@ def get_theUser(request):
         response['data']['email'] = theUser.email
         response['data']['phone'] = theUser.telephone
         response['data']['password'] = theUser.password
+        response['data']['access'] = 'admin'
         if theUser.identify == 'student':
             response['data']['college'] = theUser.college
             response['data']['major'] = theUser.major
             response['data']['identify'] = '学生'
+            response['data']['access'] = 'student'
         elif theUser.identify == 'teacher':
             response['data']['college'] = theUser.college
             response['data']['identify'] = '教师'
+            response['data']['access'] = 'teacher'
 
         return HttpResponse(json.dumps(response), status=200)
 
