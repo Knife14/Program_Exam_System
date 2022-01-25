@@ -17,3 +17,5 @@ urlpatterns = [
     path('addProblem', views.add_problem, name='addProblem'),
     path('testProgram', views.test_program, name='testProgram'),
 ]
+
+# path('getProblems', views.get_problems, name='getProblems'),
