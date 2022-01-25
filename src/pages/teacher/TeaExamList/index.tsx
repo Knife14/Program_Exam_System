@@ -27,7 +27,7 @@ const columns: ProColumns<TableListItem>[] = [
     title: '考试名称',
     width: 500,
     dataIndex: 'name',
-    render: (_) => <Link target = "_blank" to="./exam">{_}</Link>,
+    render: (_) => <Link target = "_blank" to="./examContent">{_}</Link>,
   },
   {
     title: '状态',

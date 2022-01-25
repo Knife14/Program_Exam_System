@@ -94,19 +94,19 @@
     name: 'ProList',
     path: '/ProList',
     icon: 'plus',
-    access: 'canTeacher' && 'canAdmin',
+    access: 'canTeacher' + 'canAdmin',
     component: './problems/problemsList',
   },
   {
     path: '/addProblem',
-    access: 'canTeacher' && 'canAdmin',
+    access: 'canTeacher' + 'canAdmin',
     component: './problems/addProblem',
   },
   {
     name: 'ExamList',
     path: '/ExamList',
     icon: 'code',
-    access: 'canTeacher' && 'canAdmin',
+    access: 'canTeacher' + 'canAdmin',
     component: './teacher/TeaExamList',
   },
   {
