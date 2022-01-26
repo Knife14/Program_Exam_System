@@ -14,8 +14,10 @@ urlpatterns = [
     path('changeUser', views.change_user, name='changeUser'),
     path('deleteUser', views.delete_user, name='deleteUser'),
     path('changeMyself', views.change_myself, name='changeMyself'),
+    path('getProblems', views.get_problems, name='getProblems'),
     path('addProblem', views.add_problem, name='addProblem'),
+    path('getthePro', views.get_thePro, name='getthePro'),
+    path('deletePro', views.delete_pro, name='deletePro'),
+    path('changePro', views.change_pro, name='changePro'),
     path('testProgram', views.test_program, name='testProgram'),
 ]
-
-# path('getProblems', views.get_problems, name='getProblems'),

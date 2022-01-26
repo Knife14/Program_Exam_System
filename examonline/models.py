@@ -30,25 +30,27 @@ class TestQuestions(models.Model):
     tqType = models.CharField(max_length=5, blank=False)  # 试题类型，非空：暂时是填空、编码题
     name = models.CharField(max_length=100, blank=False)  # 试题名称，非空
     tags = models.CharField(max_length=100)  # 试题标签：算法、动态规划、数据结构、BFS、DFS等，以;号间隔
-    content = models.TextField()  # 试题内容，不定长
+    content = models.TextField(blank=False)  # 试题内容，不定长，非空
     answer = models.TextField()  # 试题答案，仅填空题可能有，不定长
-    limitTime = models.IntegerField()  # 试题限制，仅编码题可能有，单位为毫秒(ms)
+    limit = models.CharField(max_length=100)  # 限制条件，一般仅为运行时间（ms）和运行内存（MB），目前只支持运行时间
     creator = models.CharField(max_length=11, blank=False)  # 试题创造者ID，非空：以确保除管理员外，只有本人才可修改本人编辑的题目?
     addtime = models.DateTimeField(auto_now_add=True)  # 记录第一次入库的时间
     changetime = models.DateTimeField(auto_now=True)  # 修改记录的时间
 
 # 示例表： 一个试题可以有多个不同的示例，一条示例即为一项纪录
 class AnswerExamples(models.Model):
-    tqID = models.CharField(max_length=14, blank=False, unique=True)  # 对应试题ID，非空且唯一
+    tqID = models.CharField(max_length=14, blank=False)  # 对应试题ID，非空且唯一
     cInput = models.TextField()  # 输入，以list形式存储，一个元素即为一个参数
     cOutput = models.TextField()  # 输出，以list形式存储，一个元素即为一个参数
+    creator = models.CharField(max_length=11, blank=False)  # 示例创造者ID，非空
     addtime = models.DateTimeField(auto_now_add=True)  # 记录第一次入库的时间
     changetime = models.DateTimeField(auto_now=True)  # 修改记录的时间
 
 # 测试用例表：一个试题可以有多个不同的测试用例，一条测试用例即为一项记录
 class TestExamples(models.Model):
-    tqID = models.CharField(max_length=14, blank=False, unique=True)  # 对应试题ID，非空且唯一
-    content = models.TextField()  # 测试用例具体内容，不定长，以list形式存储，一个元素即为一个参数
+    tqID = models.CharField(max_length=14, blank=False)  # 对应试题ID，非空且唯一
+    cInput = models.TextField()  # 输入，以list形式存储，一个元素即为一个参数
+    cOutput = models.TextField()  # 输出，以list形式存储，一个元素即为一个参数
     creator = models.CharField(max_length=11, blank=False)  # 测试用例创造者ID，非空
     addtime = models.DateTimeField(auto_now_add=True)  # 记录第一次入库的时间
     changetime = models.DateTimeField(auto_now=True)  # 修改记录的时间

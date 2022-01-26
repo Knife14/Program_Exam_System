@@ -1,4 +1,5 @@
 from typing import Collection
+from django.core.signing import dumps
 from django.shortcuts import render
 from django.http import HttpResponse, response
 from django.utils import timezone
@@ -429,86 +430,303 @@ def delete_user(request):
     response['status'] = 'error'
     return HttpResponse(json.dumps(response), status=500)
 
+
+'''
+url: /examonline/getProblems
+use: 用于展示所有题目
+http: GET
+'''
+def get_problems(request):
+    assert request.method == 'GET'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher':
+        all_problems = list(TestQuestions.objects.filter().values())
+
+        # 数据库日期类型不可被json转换
+        response['data'] = list()
+        for problem in all_problems:
+            tmp = dict()
+
+            tmp['proid'] = problem['tqID']
+            tmp['name'] = problem['name']
+            tmp['tags'] = problem['tags']
+            tmp['type'] = problem['tqType']
+            tmp['creator'] = problem['creator']
+
+            creatorID = problem['creator']
+            tmp['creatorname'] = UserInfo.objects.get(userID=creatorID).name
+
+            response['data'].append(tmp)
+
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=500)
+
+
 '''
 url: /examonline/addProblem
 use: 用于添加题目以及测试用例
 http: put
-content: tqType / name / tags / content / answer / limitTime / example / creator
+content: tqType / name / tags / content / answer / limit / cases / examples  / creator
 '''
 def add_problem(request):
-    assert request.method == 'PUT'
-    problem_json = json.loads(request.body.decode('utf-8'))
+    assert request.method == 'POST'
+    response = dict()
 
-    # 处理数据
-    tqType = problem_json['tqType']
-    tqID = \
-        str(timezone.now().year) + str(timezone.now().month).rjust(2, '0') + str(timezone.now().day).rjust(2, '0') \
-            + str(timezone.now().hour + 8).rjust(2, '0') + str(timezone.now().minute).rjust(2, '0') \
-                + str(random.randint(0, 100)).rjust(2, '0') \
-                    + ('1' if tqType == '填空' else '2')
-    creator = problem_json['creator']  # 试题创建者ID
-    name = problem_json['name']
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    no_stuID = get_username(request_token)
+
+    if UserInfo.objects.get(userID=no_stuID).identify == 'admin' or \
+        UserInfo.objects.get(userID=no_stuID).identify == 'teacher':
+        # 处理数据
+        problem_json = json.loads(request.body.decode('utf-8'))
+
+        tqType = problem_json['proType']
+        tqID = \
+            str(timezone.now().year) + str(timezone.now().month).rjust(2, '0') + str(timezone.now().day).rjust(2, '0') \
+                + str(timezone.now().hour + 8).rjust(2, '0') + str(timezone.now().minute).rjust(2, '0') \
+                    + str(random.randint(0, 100)).rjust(2, '0') \
+                        + ('1' if tqType == '填空题' else '2')
+        creator = no_stuID  # 试题创建者ID
+        name = problem_json['name']
+        
+        tags = list()
+        for tag in problem_json['tags']:
+            tags.append(tag)
+
+        content = problem_json['content']
+        
+        if tqType == '填空题':
+            # 多个答案将会以列表形式存储，只要匹配上一个，即为对
+            # 一个答案里有多个参数，将以,区分
+            answer = str(problem_json['answers'])
+
+            TestQuestions.objects.create(
+                tqID=tqID,
+                tqType=tqType,
+                name=name,
+                tags=str(tags),
+                content=content,
+                answer=answer,
+                creator=creator,
+            )
+        elif tqType == '编码题':
+            limit = problem_json['limits']
+            TestQuestions.objects.create(
+                tqID=tqID,
+                tqType=tqType,
+                name=name,
+                tags=tags,
+                content=content,
+                limit=limit,
+                creator=creator,
+            )
+
+            # 示例处理
+            # 前端将所有输入、输出示例的分别存放在两个数组中
+            # 一个输入、输出示例即为对应数组的一个元素
+            for example in problem_json['examples']:      
+                AnswerExamples.objects.create(
+                    tqID=tqID,
+                    cInput=example['input'],
+                    cOutput=example['output'],
+                    creator=creator,
+                )
+
+            # 测试用例处理
+            # 前端将所有测试用例存放到同一数组中，一个测试用例即为对应数组的一个元素
+            for case in problem_json['cases']:
+                TestExamples.objects.create(
+                    tqID=tqID,
+                    cInput=case['input'],
+                    cOutput=case['output'],
+                    creator=creator,
+                )
+        
+
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
     
-    tags = list()
-    for tag in json.loads(problem_json['tags']):
-        tags.append(tag)
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=200)
 
-    content = problem_json['content']
-    
-    if tqType == '填空':
-        answer = problem_json['answer']
+'''
+url: /examonline/getthePro
+use: 用于展示当前题目具体信息
+http: POST
+content: tqID
+'''
+def get_thePro(request):
+    assert request.method == 'POST'
+    response = dict()
 
-        TestQuestions.objects.create(
-            tqID=tqID,
-            tqType=tqType,
-            name=name,
-            tags=str(tags),
-            content=content,
-            answer=answer,
-            creator=creator,
-        )
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
 
-    elif tqType == '编码':
-        limitTime = problem_json['limitTime']
+    if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher':
+        proID = request.body.decode('utf-8')
+        problem_data = TestQuestions.objects.get(tqID=proID)
 
-        # 示例处理
-        # 前端将所有输入、输出示例的分别存放在两个数组中
-        # 一个输入、输出示例即为对应数组的一个元素
-        for index in range(len(problem_json['cInput'])):
-            cInput = problem_json['cInput'][index]
-            cOutput = problem_json['cOutput'][index]
+        # 数据库日期类型不可被json转换
+        response['data'] = dict()
+        response['data']['type'] = problem_data.tqType
+        response['data']['name'] = problem_data.name
+        response['data']['content'] = problem_data.content
+        response['data']['tags'] = problem_data.tags
+        response['data']['answers'] = problem_data.answer
+        response['data']['limit'] = problem_data.limit
+
+        if problem_data.tqType == '编码题':
+            response['data']['examples'] = list()
+            response['data']['cases'] = list()
+
+            # 示例
+            examples = list(AnswerExamples.objects.filter(tqID=proID).values())
+            for example in examples:
+                tmp = dict()
+
+                tmp['input'] = example['cInput']
+                tmp['output'] = example['cOutput']
+
+                response['data']['examples'].append(tmp)
             
-            AnswerExamples.objects.create(
-                tqID=tqID,
-                cInput=cInput,
-                cOutput=cOutput,
-                creator=creator,
-            )
+            # 测试用例
+            cases = list(TestExamples.objects.filter(tqID=proID).values())
+            for case in cases:
+                tmp = dict()
 
-        # 测试用例处理
-        # 前端将所有测试用例存放到同一数组中，一个测试用例即为对应数组的一个元素
-        for te in problem_json['TEs']:
-            TestExamples.objects.create(
-                tqID=tqID,
-                content=te,
-                creator=creator,
-            )
+                tmp['input'] = case['cInput']
+                tmp['output'] = case['cOutput']
 
-        TestQuestions.objects.create(
-            tqID=tqID,
-            tqType=tqType,
-            name=name,
-            tags=tags,
-            content=content,
-            limitTime=limitTime,
-            creator=creator,
-        )
+                response['data']['cases'].append(tmp)
 
-    return HttpResponse(status=200)
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
+
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=200)
+
+'''
+url: /examonline/changePro
+use: 用于展示当前题目具体信息
+http: POST
+content: name / tags / content / answer / limit / cases / examples
+'''
+def change_pro(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher':
+        change_json = json.loads(request.body.decode('utf-8'))
+        
+        tqID = change_json['proID']
+        nc_problem = TestQuestions.objects.filter(tqID=tqID)
+
+        for pro_k, pro_v in change_json.items():
+            if pro_k == 'proType':
+                pass
+            elif pro_k == 'examples':
+                AnswerExamples.objects.filter(tqID=tqID).delete()
+
+                for example in pro_v:      
+                    AnswerExamples.objects.create(
+                        tqID=tqID,
+                        cInput=example['input'],
+                        cOutput=example['output'],
+                        creator=userID,
+                    )
+            elif pro_k == 'cases':
+                TestExamples.objects.filter(tqID=tqID).delete()
+
+                for case in pro_v:
+                    TestExamples.objects.create(
+                        tqID=tqID,
+                        cInput=case['input'],
+                        cOutput=case['output'],
+                        creator=userID,
+                    )
+            elif pro_k == 'name':
+                nc_problem.update(name=pro_v)
+            elif pro_k == 'answers':
+                nc_problem.update(answer=pro_v)
+            elif pro_k == 'tags':
+                tags = list()
+                for tag in pro_v:
+                    tags.append(tag)
+                nc_problem.update(tags=str(tags))
+            elif pro_k == 'limits':
+                nc_problem.update(limit=pro_v)
+            elif pro_k == 'content':
+                # 这里有个瑕疵，数据库会自动去掉/n
+                nc_problem.update(content=pro_v)
+
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/deletePro
+use: 用于展示当前题目具体信息
+http: POST
+content: tqID
+'''
+def delete_pro(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher':
+        proID = json.loads(request.body.decode('utf-8'))['proID']
+
+        nd_problem = TestQuestions.objects.get(tqID=proID)
+        proType = nd_problem.tqType
+
+        # 删除 试题表 中相关信息
+        TestQuestions.objects.filter(tqID=proID).delete()
+
+        # 如果是编码题，还需要删除对应的示例信息与测试用例信息
+        if proType == '编码题':
+            TestExamples.objects.filter(tqID=proID).delete()
+            AnswerExamples.objects.filter(tqID=proID).delete()
+
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=200)
+
 
 '''
 url: /examonline/testProgram
-use: 用于添加题目以及测试用例
+use: 用于测试程序
 http: post
 content: 
 '''
