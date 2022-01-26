@@ -16,7 +16,6 @@ import ProForm, {
     ProFormTreeSelect,
   } from '@ant-design/pro-form';
 import { addProblem } from '../../../services/swagger/exam';
-// import Codemirror from './Codemirror';
 
 type ProType = '填空题' | '编码题';
 
@@ -42,19 +41,20 @@ export default () => {
   return (
     <div>
       <ProForm
-        name="addUser_from"
+        name="addPro_from"
         onFinish={async (value) => {
             // test
             // let send_data = value;
             // send_data['type'] = proType; 
-            console.log(value);
+            // console.log(value);
 
-            // let msg = await addProblem(value);
-            // if (msg.status === 'ok') {
-            //     alert('添加成功！');
-            // } else {
-            //     alert('添加失败！');
-            // }
+            value['proType'] = proType;
+            let msg = await addProblem(value);
+            if (msg.status === 'ok') {
+                alert('添加成功！');
+            } else {
+                alert('添加失败！');
+            }
         }}
       >
         <ProFormGroup label="新建试题">
@@ -88,7 +88,7 @@ export default () => {
             <ProFormList
               name="answers"
               label="答案"
-              tooltip="主要为适应多种写法功能一致情况。"
+              tooltip="主要为适应多种写法功能一致情况。如有多个答案，将以 ,（英文符号逗号） 分开"
               rules={[
                 {
                   validator: async (_, value) => {

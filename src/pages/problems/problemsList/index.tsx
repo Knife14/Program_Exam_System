@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Button } from 'antd';
+import { Button, Tag } from 'antd';
 import { Link } from 'umi';
 import { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable, { TableDropdown } from '@ant-design/pro-table';
 import { getProblems } from '../../../services/swagger/exam';
+import { render } from 'react-dom';
 
 
 // 表格列配置
@@ -13,6 +14,7 @@ export type TableListItem = {
     tags: string;
     type: string;
     creator: string;
+    creatorname: string;
   };
 
 
@@ -20,18 +22,18 @@ export type TableListItem = {
 const columns: ProColumns<TableListItem>[] = [
   {
     title: '编号',
-    width: 30,
+    width: 20,
     dataIndex: 'proid'
   },
   {
     title: '名称',
-    width: 150,
+    width: 300,
     dataIndex: 'name',
     render: (_, record) => {
       return (
         <Link 
           target = "_blank" 
-          to = {`./changeInfo?userid=${record.proid}`}
+          to = {`./changePro?proid=${record.proid}`}
         >
           {_}
         </Link>
@@ -41,26 +43,47 @@ const columns: ProColumns<TableListItem>[] = [
   {
     title: '类型',
     width: 30,
-    dataIndex: 'type'
+    dataIndex: 'type',
+    filters: [
+      { text: '填空题', value: '填空题' },
+      { text: '编码题', value: '编码题' },
+    ],
+    onFilter: (value, record) => record.type == value,
   },
   {
     title: '标签',
-    width: 80,
-    dataIndex: 'tags'
+    key: "tags",
+    width: 100,
+    dataIndex: 'tags',
+    render: (_, record) => {
+      let re = [];
+      
+      for (let tag of _) {
+        tag = tag.slice(1, tag.length - 1);
+        re.push(<Tag>{tag}</Tag>);
+      }
+
+      return re;
+    },
   },
   {
     title: '创建者',
-    width: 80,
+    width: 50,
     dataIndex: 'creator'
   },
   {
+    title: '创建者姓名',
+    width: 70,
+    dataIndex: 'creatorname'
+  },
+  {
     title: '操作',
-    width: 50,
+    width: 80,
     key: 'option',
     valueType: 'option',
     render: (_, record) => [
-        <Link target = "_blank" to = {`./changePro?userid=${record.proid}`}>编辑</Link>,
-        <Link target = "_blank" to = {`./deletePro?userid=${record.proid}`}>删除</Link>,
+        <Link target = "_blank" to = {`./changePro?proid=${record.proid}`}>编辑</Link>,
+        <Link target = "_blank" to = {`./deletePro?proid=${record.proid}`}>删除</Link>,
       ],
   },
 ];
@@ -74,8 +97,17 @@ export default () => {
   useEffect(async () => {
     let msg = await getProblems();
 
-    for (let user of msg['data']){
-        tableListDataSource.push(user);
+    for (let pro of msg['data']){
+      // 去除空格
+      const reg = /\s+/g;
+      var tags = pro['tags'].replace(reg,'');
+
+      // string -> list 中文字符串无法使用json进行快速转换
+      tags = tags.slice(1, tags.length - 1).split(",");
+
+      pro['tags'] = tags;
+
+      tableListDataSource.push(pro);
     }
   }, []);
 

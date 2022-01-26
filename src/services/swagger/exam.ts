@@ -15,6 +15,49 @@ export async function getProblems(options?: { [key: string]: any }) {
 /** 添加试题 POST /examonline/addProblem */
 export async function addProblem(body: { [key: string]: any}, options?: { [key: string]: any }) {
   return request<API.NothingResponse>('/examonline/addProblem', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 获取对应试题 POST /examonline/getthePro */
+export async function getthePro(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/getthePro', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 修改对应试题 POST /examonline/changePro */
+export async function changePro(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/changePro', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 删除对应试题 POST /examonline/deletePro */
+export async function deletePro(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/deletePro', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
     method: 'POST',
     data: body,
     ...(options || {}),

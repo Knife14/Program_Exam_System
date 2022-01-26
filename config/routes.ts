@@ -103,6 +103,16 @@
     component: './problems/addProblem',
   },
   {
+    path: '/changePro',
+    access: 'canTeacher' + 'canAdmin',
+    component: './problems/changePro',
+  },
+  {
+    path: '/deletePro',
+    access: 'canTeacher' + 'canAdmin',
+    component: './problems/deletePro',
+  },
+  {
     name: 'ExamList',
     path: '/ExamList',
     icon: 'code',
