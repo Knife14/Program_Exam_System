@@ -23,6 +23,7 @@ type ProType = '填空题' | '编码题';
 
 export default () => {
     let [proData, SetData] = useState({});
+    let [lcontent, SetContent] = useState([]);
     const location = useLocation();
     const proID = location.query['proid'].toString();
 
@@ -54,6 +55,7 @@ export default () => {
 
         // string -> list 中文字符串无法使用json进行快速转换
         limit = limit.slice(1, limit.length - 1).split(",");
+        console.log(limit);
 
         msg['data']['limit'] = limit;
 
@@ -62,12 +64,15 @@ export default () => {
             msg['data']['cases'] = null;
         }
 
+        // 处理长文本内容换行问题
+        SetContent(msg['data']['content'].split(""));
+
         // 传递数据
         SetData(msg['data']);
     }, []);
 
     return (
-        <div>
+        <div style={{ whiteSpace: 'pre-wrap'}}>
             <ProForm
                 name="changePro_from"
                 submitter={{
@@ -103,7 +108,7 @@ export default () => {
                     width="xl" 
                     name="limits" 
                     label="限制条件" 
-                    tooltip="时间限制以ms为单位，内存限制以kb为单位。每个标签以回车（enter）键为结束"
+                    tooltip="请不要在这里修改！"
                     value={proData['limit']}
                     allowClear={false}
                 />
@@ -114,6 +119,7 @@ export default () => {
                     label="标签"
                     options={saved_tags}
                     value={proData['tags']}
+                    tooltip="请不要在这里修改！"
                 />
                 <ProFormTextArea
                     readonly
@@ -122,6 +128,13 @@ export default () => {
                     label="内容"
                     tooltip="输入框右下角可以自由拉伸；若是代码段，考生所需填代码以 ___; 表示（3条下划线）"
                     value={proData['content']}
+                />
+                <ProFormTextArea
+                  readonly
+                  width="xl" 
+                  name="inputnum" 
+                  label="所需填入代码段数"
+                  value={proData['inputnum']} 
                 />
                 <ProFormTextArea
                     readonly
@@ -209,11 +222,16 @@ export default () => {
                               // rules={[{ required: true, message: '请输入题目内容！' }]}
                               tooltip="输入框右下角可以自由拉伸；若是代码段，考生所需填代码以 ___; 表示（3条下划线）"
                           />
+                          <ProFormText 
+                            width="xl" 
+                            name="inputnum" 
+                            label="所需填入代码段数" 
+                          />
                           <ProFormText
                             name="answers"
                             width="xl"
                             label="答案"
-                            tooltip="主要为适应多种写法功能一致情况。如有多个答案，将以 ,（英文符号逗号） 分开"
+                            tooltip="如有多个答案，请以代码将会输出的格式进行严格填写"
                           />
                           <br />
                         </>

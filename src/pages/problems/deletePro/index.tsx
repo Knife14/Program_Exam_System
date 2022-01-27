@@ -67,7 +67,7 @@ export default () => {
     }, []);
 
     return (
-        <div>
+        <div style={{ whiteSpace: 'pre-wrap'}}>
             <ProForm
                 name="changePro_from"
                 submitter={{
@@ -127,6 +127,13 @@ export default () => {
                     label="内容"
                     tooltip="输入框右下角可以自由拉伸；若是代码段，考生所需填代码以 ___; 表示（3条下划线）"
                     value={proData['content']}
+                />
+                <ProFormTextArea
+                  readonly
+                  width="xl" 
+                  name="inputnum" 
+                  label="所需填入代码段数"
+                  value={proData['inputnum']} 
                 />
                 <ProFormTextArea
                     readonly

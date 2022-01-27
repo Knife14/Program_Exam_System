@@ -85,38 +85,19 @@ export default () => {
                 rules={[{ required: true, message: '请输入题目内容！' }]}
                 tooltip="输入框右下角可以自由拉伸；若是代码段，考生所需填代码以 ___; 表示（3条下划线）"
             />
-            <ProFormList
+            <ProFormText 
+                width="xl" 
+                name="inputnum" 
+                label="所需填入代码段数" 
+                rules={[{ required: true, message: '请输入所需填入代码段数！' }]}
+            />
+            <ProFormTextArea
+              width="xl"
               name="answers"
               label="答案"
-              tooltip="主要为适应多种写法功能一致情况。如有多个答案，将以 ,（英文符号逗号） 分开"
-              rules={[
-                {
-                  validator: async (_, value) => {
-                    // console.log(value);
-                    if (value && value.length > 0) {
-                      return;
-                    }
-                    throw new Error('至少要有一项！');
-                  },
-                },
-              ]}
-              creatorButtonProps={{
-                position: 'bottom',
-              }}
-            >
-              <ProFormGroup>
-                <ProFormText
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
-                  name="answer"
-                  width='xl'
-                />
-              </ProFormGroup>
-            </ProFormList>
-            <br />
+              tooltip="如有多个答案，请以代码将会输出的格式进行严格填写"
+              rules={[{ required: true, message: '请输入答案！'}]}
+            />
           </>
         )}
         {proType === '编码题' && (
