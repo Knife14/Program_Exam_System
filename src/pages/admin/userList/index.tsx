@@ -110,6 +110,8 @@ export default () => {
   const actionRef = useRef<ActionType>();
 
   useEffect(async () => {
+    tableListDataSource.splice(0, tableListDataSource.length);
+
     let msg = await getUsers();
 
     for (let user of msg['data']){

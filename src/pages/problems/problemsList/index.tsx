@@ -95,6 +95,8 @@ export default () => {
   const actionRef = useRef<ActionType>();
 
   useEffect(async () => {
+    tableListDataSource.splice(0, tableListDataSource.length);
+    
     let msg = await getProblems();
 
     for (let pro of msg['data']){
@@ -106,7 +108,6 @@ export default () => {
       tags = tags.slice(1, tags.length - 1).split(",");
 
       pro['tags'] = tags;
-
       tableListDataSource.push(pro);
     }
   }, []);
