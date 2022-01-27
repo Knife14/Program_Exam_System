@@ -511,6 +511,7 @@ def add_problem(request):
             # 多个答案将会以列表形式存储，只要匹配上一个，即为对
             # 一个答案里有多个参数，将以,区分
             answer = str(problem_json['answers'])
+            inputnum = int(problem_json['inputnum'])
 
             TestQuestions.objects.create(
                 tqID=tqID,
@@ -520,6 +521,7 @@ def add_problem(request):
                 content=content,
                 answer=answer,
                 creator=creator,
+                inputnums=inputnum,
             )
         elif tqType == '编码题':
             limit = problem_json['limits']
@@ -585,12 +587,14 @@ def get_thePro(request):
         response['data'] = dict()
         response['data']['type'] = problem_data.tqType
         response['data']['name'] = problem_data.name
-        response['data']['content'] = problem_data.content
         response['data']['tags'] = problem_data.tags
+        response['data']['content'] = problem_data.content
         response['data']['answers'] = problem_data.answer
         response['data']['limit'] = problem_data.limit
 
-        if problem_data.tqType == '编码题':
+        if problem_data.tqType == '填空题':
+            response['data']['inputnum'] = problem_data.inputnums
+        elif problem_data.tqType == '编码题':
             response['data']['examples'] = list()
             response['data']['cases'] = list()
 
@@ -677,8 +681,9 @@ def change_pro(request):
             elif pro_k == 'limits':
                 nc_problem.update(limit=pro_v)
             elif pro_k == 'content':
-                # 这里有个瑕疵，数据库会自动去掉/n
                 nc_problem.update(content=pro_v)
+            elif pro_k == 'inputnum':
+                nc_problem.update(inputnums=pro_v)
 
         response['status'] = 'ok'
         return HttpResponse(json.dumps(response), status=200)
@@ -689,7 +694,7 @@ def change_pro(request):
 
 '''
 url: /examonline/deletePro
-use: 用于展示当前题目具体信息
+use: 用于删除对应题目
 http: POST
 content: tqID
 '''
