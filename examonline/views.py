@@ -368,7 +368,7 @@ def change_user(request):
             if info_k == 'userID':
                 pass
             elif info_k == 'password':
-                currUser.update(password=info_v)
+                currUser.update(password=info_v, changetime=timezone.now())
             elif info_k == 'college':
                 if info_v == 'computer':
                     college = '计算机学院'
@@ -377,7 +377,7 @@ def change_user(request):
                 else:
                     college = '其他学院'
 
-                currUser.update(college=college)
+                currUser.update(college=college, changetime=timezone.now())
             elif info_k == 'major':
                 if info_v == 'csplus':
                     major = '计算机科学与技术（卓越班）'
@@ -390,11 +390,11 @@ def change_user(request):
                 else:
                     major = '其他专业'
 
-                currUser.update(major=major)
+                currUser.update(major=major, changetime=timezone.now())
             elif info_k == 'phone':
-                currUser.update(telephone=info_v)
+                currUser.update(telephone=info_v, changetime=timezone.now())
             elif info_k == 'email':
-                currUser.update(email=info_v)
+                currUser.update(email=info_v, changetime=timezone.now())
 
         response['status'] = 'ok'
         return HttpResponse(json.dumps(response), status=200)
@@ -670,20 +670,20 @@ def change_pro(request):
                         creator=userID,
                     )
             elif pro_k == 'name':
-                nc_problem.update(name=pro_v)
+                nc_problem.update(name=pro_v, changetime=timezone.now())
             elif pro_k == 'answers':
-                nc_problem.update(answer=pro_v)
+                nc_problem.update(answer=pro_v, changetime=timezone.now())
             elif pro_k == 'tags':
                 tags = list()
                 for tag in pro_v:
                     tags.append(tag)
-                nc_problem.update(tags=str(tags))
+                nc_problem.update(tags=str(tags), changetime=timezone.now())
             elif pro_k == 'limits':
-                nc_problem.update(limit=pro_v)
+                nc_problem.update(limit=pro_v, changetime=timezone.now())
             elif pro_k == 'content':
-                nc_problem.update(content=pro_v)
+                nc_problem.update(content=pro_v, changetime=timezone.now())
             elif pro_k == 'inputnum':
-                nc_problem.update(inputnums=pro_v)
+                nc_problem.update(inputnums=pro_v, changetime=timezone.now())
 
         response['status'] = 'ok'
         return HttpResponse(json.dumps(response), status=200)

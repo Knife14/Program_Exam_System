@@ -35,6 +35,7 @@ class TestQuestions(models.Model):
     inputnums = models.IntegerField()  # 试题需要填充的代码段数，仅填空题有
     limit = models.CharField(max_length=100)  # 限制条件，一般仅为运行时间（ms）和运行内存（MB），目前只支持运行时间
     creator = models.CharField(max_length=11, blank=False)  # 试题创造者ID，非空：以确保除管理员外，只有本人才可修改本人编辑的题目?
+    aqtimes = models.IntegerField(default=0)  # 出题次数，默认为0
     addtime = models.DateTimeField(auto_now_add=True)  # 记录第一次入库的时间
     changetime = models.DateTimeField(auto_now=True)  # 修改记录的时间
 
