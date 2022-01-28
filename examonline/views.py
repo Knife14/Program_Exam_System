@@ -214,89 +214,90 @@ def add_user(request):
     # token_status = check_token(request_token)  # 解密并检验token
     admin_ID = get_username(request_token)
 
-    if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
-        print('in')
-        # 处理 request body
-        userInfo_json = json.loads(request.body.decode('utf-8'))
-        # 根据身份分类处理
-        identify = userInfo_json['identify']
-        userID = userInfo_json['userID']
+    try:
+        if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
+            print('in')
+            # 处理 request body
+            userInfo_json = json.loads(request.body.decode('utf-8'))
+            # 根据身份分类处理
+            identify = userInfo_json['identify']
+            userID = userInfo_json['userID']
 
-        # 若添加的userID重复
-        if UserInfo.objects.filter(userID=userID):
-            response['status'] = 'error'
-            return HttpResponse(json.dumps(response), status=500)
+            # 若添加的userID重复
+            if UserInfo.objects.filter(userID=userID):
+                response['status'] = 'error'
+                return HttpResponse(json.dumps(response), status=500)
 
-        password = userInfo_json['password']
-        name = userInfo_json['name']
-        # 如果是管理者身份
-        if identify == 'admin':
-            # 直接存入数据库
-            new_user = UserInfo(
-                identify=identify,
-                userID=userID,
-                password=password,
-                name=name,
-                changetime=timezone.now(),
-            )
-            new_user.save()
-        elif identify == 'teacher':
-            ex_college = userInfo_json['college']
-            if ex_college == 'computer':
-                college = '计算机学院'
-            elif ex_college == 'software':
-                college = '软件学院'
-            else:
-                college = '其他学院'
+            password = userInfo_json['password']
+            name = userInfo_json['name']
+            # 如果是管理者身份
+            if identify == 'admin':
+                # 直接存入数据库
+                new_user = UserInfo(
+                    identify=identify,
+                    userID=userID,
+                    password=password,
+                    name=name,
+                    changetime=timezone.now(),
+                )
+                new_user.save()
+            elif identify == 'teacher':
+                ex_college = userInfo_json['college']
+                if ex_college == 'computer':
+                    college = '计算机学院'
+                elif ex_college == 'software':
+                    college = '软件学院'
+                else:
+                    college = '其他学院'
+                
+                # 存入数据库
+                new_user = UserInfo(
+                    identify=identify,
+                    userID=userID,
+                    password=password,
+                    name=name,
+                    college=college,
+                    changetime=timezone.now(),
+                )
+                new_user.save()
+            elif identify == 'student':
+                ex_college = userInfo_json['college']
+                if ex_college == 'computer':
+                    college = '计算机学院'
+                elif ex_college == 'software':
+                    college = '软件学院'
+                else:
+                    college = '其他学院'
+                
+                ex_major = userInfo_json['major']
+                if ex_major == 'csplus':
+                    major = '计算机科学与技术（卓越班）'
+                elif ex_major == 'cs':
+                    major = '计算机科学与技术'
+                elif ex_major == 'iot':
+                    major = '物联网工程'
+                elif ex_major == 'is':
+                    major = '信息安全'
+                else:
+                    major = '其他专业'
+
+                # 存入数据库
+                new_user = UserInfo(
+                    identify=identify,
+                    userID=userID,
+                    password=password,
+                    name=name,
+                    college=college,
+                    major=major,
+                    changetime=timezone.now(),
+                )
+                new_user.save()
             
-            # 存入数据库
-            new_user = UserInfo(
-                identify=identify,
-                userID=userID,
-                password=password,
-                name=name,
-                college=college,
-                changetime=timezone.now(),
-            )
-            new_user.save()
-        elif identify == 'student':
-            ex_college = userInfo_json['college']
-            if ex_college == 'computer':
-                college = '计算机学院'
-            elif ex_college == 'software':
-                college = '软件学院'
-            else:
-                college = '其他学院'
-            
-            ex_major = userInfo_json['major']
-            if ex_major == 'csplus':
-                major = '计算机科学与技术（卓越班）'
-            elif ex_major == 'cs':
-                major = '计算机科学与技术'
-            elif ex_major == 'iot':
-                major = '物联网工程'
-            elif ex_major == 'is':
-                major = '信息安全'
-            else:
-                major = '其他专业'
-
-            # 存入数据库
-            new_user = UserInfo(
-                identify=identify,
-                userID=userID,
-                password=password,
-                name=name,
-                college=college,
-                major=major,
-                changetime=timezone.now(),
-            )
-            new_user.save()
-        
-        response['status'] = 'ok'
-        return HttpResponse(json.dumps(response), status=200)
-
-    response['status'] = 'error'
-    return HttpResponse(json.dumps(response), status=500)
+            response['status'] = 'ok'
+            return HttpResponse(json.dumps(response), status=200)
+    except:
+        response['status'] = 'error'
+        return HttpResponse(json.dumps(response), status=500)
 
 
 '''
@@ -358,49 +359,50 @@ def change_user(request):
     # token_status = check_token(request_token)  # 解密并检验token
     admin_ID = get_username(request_token)
 
-    if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
-        userInfo_json = json.loads(request.body.decode('utf-8'))
-        # 查询用户记录
-        userID = userInfo_json['userID']
-        currUser = UserInfo.objects.filter(userID=userID)
+    try:
+        if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
+            userInfo_json = json.loads(request.body.decode('utf-8'))
+            # 查询用户记录
+            userID = userInfo_json['userID']
+            currUser = UserInfo.objects.filter(userID=userID)
 
-        for info_k, info_v in userInfo_json.items():
-            if info_k == 'userID':
-                pass
-            elif info_k == 'password':
-                currUser.update(password=info_v, changetime=timezone.now())
-            elif info_k == 'college':
-                if info_v == 'computer':
-                    college = '计算机学院'
-                elif info_v == 'software':
-                    college = '软件学院'
-                else:
-                    college = '其他学院'
+            for info_k, info_v in userInfo_json.items():
+                if info_k == 'userID':
+                    pass
+                elif info_k == 'password':
+                    currUser.update(password=info_v, changetime=timezone.now())
+                elif info_k == 'college':
+                    if info_v == 'computer':
+                        college = '计算机学院'
+                    elif info_v == 'software':
+                        college = '软件学院'
+                    else:
+                        college = '其他学院'
 
-                currUser.update(college=college, changetime=timezone.now())
-            elif info_k == 'major':
-                if info_v == 'csplus':
-                    major = '计算机科学与技术（卓越班）'
-                elif info_v == 'cs':
-                    major = '计算机科学与技术'
-                elif info_v == 'iot':
-                    major = '物联网工程'
-                elif info_v == 'is':
-                    major = '信息安全'
-                else:
-                    major = '其他专业'
+                    currUser.update(college=college, changetime=timezone.now())
+                elif info_k == 'major':
+                    if info_v == 'csplus':
+                        major = '计算机科学与技术（卓越班）'
+                    elif info_v == 'cs':
+                        major = '计算机科学与技术'
+                    elif info_v == 'iot':
+                        major = '物联网工程'
+                    elif info_v == 'is':
+                        major = '信息安全'
+                    else:
+                        major = '其他专业'
 
-                currUser.update(major=major, changetime=timezone.now())
-            elif info_k == 'phone':
-                currUser.update(telephone=info_v, changetime=timezone.now())
-            elif info_k == 'email':
-                currUser.update(email=info_v, changetime=timezone.now())
+                    currUser.update(major=major, changetime=timezone.now())
+                elif info_k == 'phone':
+                    currUser.update(telephone=info_v, changetime=timezone.now())
+                elif info_k == 'email':
+                    currUser.update(email=info_v, changetime=timezone.now())
 
-        response['status'] = 'ok'
-        return HttpResponse(json.dumps(response), status=200)
-    
-    response['status'] = 'error'
-    return HttpResponse(json.dumps(response), status=500)
+            response['status'] = 'ok'
+            return HttpResponse(json.dumps(response), status=200)
+    except:
+        response['status'] = 'error'
+        return HttpResponse(json.dumps(response), status=500)
 
 
 '''
@@ -487,81 +489,82 @@ def add_problem(request):
     # token_status = check_token(request_token)  # 解密并检验token
     no_stuID = get_username(request_token)
 
-    if UserInfo.objects.get(userID=no_stuID).identify == 'admin' or \
-        UserInfo.objects.get(userID=no_stuID).identify == 'teacher':
-        # 处理数据
-        problem_json = json.loads(request.body.decode('utf-8'))
+    try:
+        if UserInfo.objects.get(userID=no_stuID).identify == 'admin' or \
+            UserInfo.objects.get(userID=no_stuID).identify == 'teacher':
+            # 处理数据
+            problem_json = json.loads(request.body.decode('utf-8'))
 
-        tqType = problem_json['proType']
-        tqID = \
-            str(timezone.now().year) + str(timezone.now().month).rjust(2, '0') + str(timezone.now().day).rjust(2, '0') \
-                + str(timezone.now().hour + 8).rjust(2, '0') + str(timezone.now().minute).rjust(2, '0') \
-                    + str(random.randint(0, 100)).rjust(2, '0') \
-                        + ('1' if tqType == '填空题' else '2')
-        creator = no_stuID  # 试题创建者ID
-        name = problem_json['name']
-        
-        tags = list()
-        for tag in problem_json['tags']:
-            tags.append(tag)
+            tqType = problem_json['proType']
+            tqID = \
+                str(timezone.now().year) + str(timezone.now().month).rjust(2, '0') + str(timezone.now().day).rjust(2, '0') \
+                    + str(timezone.now().hour + 8).rjust(2, '0') + str(timezone.now().minute).rjust(2, '0') \
+                        + str(random.randint(0, 100)).rjust(2, '0') \
+                            + ('1' if tqType == '填空题' else '2')
+            creator = no_stuID  # 试题创建者ID
+            name = problem_json['name']
+            
+            tags = list()
+            for tag in problem_json['tags']:
+                tags.append(tag)
 
-        content = problem_json['content']
-        
-        if tqType == '填空题':
-            # 多个答案将会以列表形式存储，只要匹配上一个，即为对
-            # 一个答案里有多个参数，将以,区分
-            answer = str(problem_json['answers'])
-            inputnum = int(problem_json['inputnum'])
+            content = problem_json['content']
+            
+            if tqType == '填空题':
+                # 多个答案将会以列表形式存储，只要匹配上一个，即为对
+                # 一个答案里有多个参数，将以,区分
+                answer = str(problem_json['answers'])
+                inputnum = int(problem_json['inputnum'])
 
-            TestQuestions.objects.create(
-                tqID=tqID,
-                tqType=tqType,
-                name=name,
-                tags=str(tags),
-                content=content,
-                answer=answer,
-                creator=creator,
-                inputnums=inputnum,
-            )
-        elif tqType == '编码题':
-            limit = problem_json['limits']
-            TestQuestions.objects.create(
-                tqID=tqID,
-                tqType=tqType,
-                name=name,
-                tags=tags,
-                content=content,
-                limit=limit,
-                creator=creator,
-            )
-
-            # 示例处理
-            # 前端将所有输入、输出示例的分别存放在两个数组中
-            # 一个输入、输出示例即为对应数组的一个元素
-            for example in problem_json['examples']:      
-                AnswerExamples.objects.create(
+                TestQuestions.objects.create(
                     tqID=tqID,
-                    cInput=example['input'],
-                    cOutput=example['output'],
+                    tqType=tqType,
+                    name=name,
+                    tags=str(tags),
+                    content=content,
+                    answer=answer,
+                    creator=creator,
+                    inputnums=inputnum,
+                )
+            elif tqType == '编码题':
+                limit = problem_json['limits']
+                TestQuestions.objects.create(
+                    tqID=tqID,
+                    tqType=tqType,
+                    name=name,
+                    tags=tags,
+                    content=content,
+                    limit=limit,
                     creator=creator,
                 )
 
-            # 测试用例处理
-            # 前端将所有测试用例存放到同一数组中，一个测试用例即为对应数组的一个元素
-            for case in problem_json['cases']:
-                TestExamples.objects.create(
-                    tqID=tqID,
-                    cInput=case['input'],
-                    cOutput=case['output'],
-                    creator=creator,
-                )
-        
+                # 示例处理
+                # 前端将所有输入、输出示例的分别存放在两个数组中
+                # 一个输入、输出示例即为对应数组的一个元素
+                for example in problem_json['examples']:      
+                    AnswerExamples.objects.create(
+                        tqID=tqID,
+                        cInput=example['input'],
+                        cOutput=example['output'],
+                        creator=creator,
+                    )
 
-        response['status'] = 'ok'
+                # 测试用例处理
+                # 前端将所有测试用例存放到同一数组中，一个测试用例即为对应数组的一个元素
+                for case in problem_json['cases']:
+                    TestExamples.objects.create(
+                        tqID=tqID,
+                        cInput=case['input'],
+                        cOutput=case['output'],
+                        creator=creator,
+                    )
+            
+
+            response['status'] = 'ok'
+            return HttpResponse(json.dumps(response), status=200)
+    except:
+        response['status'] = 'error'
         return HttpResponse(json.dumps(response), status=200)
-    
-    response['status'] = 'error'
-    return HttpResponse(json.dumps(response), status=200)
 
 '''
 url: /examonline/getthePro
@@ -639,57 +642,58 @@ def change_pro(request):
     # token_status = check_token(request_token)  # 解密并检验token
     userID = get_username(request_token)
 
-    if UserInfo.objects.get(userID=userID).identify == 'admin' or \
-        UserInfo.objects.get(userID=userID).identify == 'teacher':
-        change_json = json.loads(request.body.decode('utf-8'))
-        
-        tqID = change_json['proID']
-        nc_problem = TestQuestions.objects.filter(tqID=tqID)
+    try:
+        if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+            UserInfo.objects.get(userID=userID).identify == 'teacher':
+            change_json = json.loads(request.body.decode('utf-8'))
+            
+            tqID = change_json['proID']
+            nc_problem = TestQuestions.objects.filter(tqID=tqID)
 
-        for pro_k, pro_v in change_json.items():
-            if pro_k == 'proType':
-                pass
-            elif pro_k == 'examples':
-                AnswerExamples.objects.filter(tqID=tqID).delete()
+            for pro_k, pro_v in change_json.items():
+                if pro_k == 'proType':
+                    pass
+                elif pro_k == 'examples':
+                    AnswerExamples.objects.filter(tqID=tqID).delete()
 
-                for example in pro_v:      
-                    AnswerExamples.objects.create(
-                        tqID=tqID,
-                        cInput=example['input'],
-                        cOutput=example['output'],
-                        creator=userID,
-                    )
-            elif pro_k == 'cases':
-                TestExamples.objects.filter(tqID=tqID).delete()
+                    for example in pro_v:      
+                        AnswerExamples.objects.create(
+                            tqID=tqID,
+                            cInput=example['input'],
+                            cOutput=example['output'],
+                            creator=userID,
+                        )
+                elif pro_k == 'cases':
+                    TestExamples.objects.filter(tqID=tqID).delete()
 
-                for case in pro_v:
-                    TestExamples.objects.create(
-                        tqID=tqID,
-                        cInput=case['input'],
-                        cOutput=case['output'],
-                        creator=userID,
-                    )
-            elif pro_k == 'name':
-                nc_problem.update(name=pro_v, changetime=timezone.now())
-            elif pro_k == 'answers':
-                nc_problem.update(answer=pro_v, changetime=timezone.now())
-            elif pro_k == 'tags':
-                tags = list()
-                for tag in pro_v:
-                    tags.append(tag)
-                nc_problem.update(tags=str(tags), changetime=timezone.now())
-            elif pro_k == 'limits':
-                nc_problem.update(limit=pro_v, changetime=timezone.now())
-            elif pro_k == 'content':
-                nc_problem.update(content=pro_v, changetime=timezone.now())
-            elif pro_k == 'inputnum':
-                nc_problem.update(inputnums=pro_v, changetime=timezone.now())
+                    for case in pro_v:
+                        TestExamples.objects.create(
+                            tqID=tqID,
+                            cInput=case['input'],
+                            cOutput=case['output'],
+                            creator=userID,
+                        )
+                elif pro_k == 'name':
+                    nc_problem.update(name=pro_v, changetime=timezone.now())
+                elif pro_k == 'answers':
+                    nc_problem.update(answer=pro_v, changetime=timezone.now())
+                elif pro_k == 'tags':
+                    tags = list()
+                    for tag in pro_v:
+                        tags.append(tag)
+                    nc_problem.update(tags=str(tags), changetime=timezone.now())
+                elif pro_k == 'limits':
+                    nc_problem.update(limit=pro_v, changetime=timezone.now())
+                elif pro_k == 'content':
+                    nc_problem.update(content=pro_v, changetime=timezone.now())
+                elif pro_k == 'inputnum':
+                    nc_problem.update(inputnums=pro_v, changetime=timezone.now())
 
-        response['status'] = 'ok'
+            response['status'] = 'ok'
+            return HttpResponse(json.dumps(response), status=200)
+    except:
+        response['status'] = 'error'
         return HttpResponse(json.dumps(response), status=200)
-    
-    response['status'] = 'error'
-    return HttpResponse(json.dumps(response), status=200)
 
 
 '''
@@ -707,26 +711,27 @@ def delete_pro(request):
     # token_status = check_token(request_token)  # 解密并检验token
     userID = get_username(request_token)
 
-    if UserInfo.objects.get(userID=userID).identify == 'admin' or \
-        UserInfo.objects.get(userID=userID).identify == 'teacher':
-        proID = json.loads(request.body.decode('utf-8'))['proID']
+    try:
+        if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+            UserInfo.objects.get(userID=userID).identify == 'teacher':
+            proID = json.loads(request.body.decode('utf-8'))['proID']
 
-        nd_problem = TestQuestions.objects.get(tqID=proID)
-        proType = nd_problem.tqType
+            nd_problem = TestQuestions.objects.get(tqID=proID)
+            proType = nd_problem.tqType
 
-        # 删除 试题表 中相关信息
-        TestQuestions.objects.filter(tqID=proID).delete()
+            # 删除 试题表 中相关信息
+            TestQuestions.objects.filter(tqID=proID).delete()
 
-        # 如果是编码题，还需要删除对应的示例信息与测试用例信息
-        if proType == '编码题':
-            TestExamples.objects.filter(tqID=proID).delete()
-            AnswerExamples.objects.filter(tqID=proID).delete()
+            # 如果是编码题，还需要删除对应的示例信息与测试用例信息
+            if proType == '编码题':
+                TestExamples.objects.filter(tqID=proID).delete()
+                AnswerExamples.objects.filter(tqID=proID).delete()
 
-        response['status'] = 'ok'
+            response['status'] = 'ok'
+            return HttpResponse(json.dumps(response), status=200)
+    except:
+        response['status'] = 'error'
         return HttpResponse(json.dumps(response), status=200)
-    
-    response['status'] = 'error'
-    return HttpResponse(json.dumps(response), status=200)
 
 
 '''
