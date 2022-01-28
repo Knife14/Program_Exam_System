@@ -51,11 +51,15 @@ export default () => {
         // 处理限制条件
         // 去除空格
         const reg = /\s+/g;
-        var limit = msg['data']['limit'].replace(reg,'');
+        var tlimit = msg['data']['limit'].replace(reg,'');
+        var limit = [];
 
         // string -> list 中文字符串无法使用json进行快速转换
-        limit = limit.slice(1, limit.length - 1).split(",");
-        console.log(limit);
+        tlimit = tlimit.slice(1, tlimit.length - 1).split(",");
+        for (let lim of tlimit){
+          lim = lim.slice(1, lim.length - 1);
+          limit.push(lim);
+        }
 
         msg['data']['limit'] = limit;
 
@@ -126,7 +130,7 @@ export default () => {
                     width="xl"
                     name="content"
                     label="内容"
-                    tooltip="输入框右下角可以自由拉伸；若是代码段，考生所需填代码以 ___; 表示（3条下划线）"
+                    tooltip="输入框右下角可以自由拉伸；若是代码段，考生所需填代码以 ___ 表示（3条下划线）"
                     value={proData['content']}
                 />
                 <ProFormTextArea
@@ -157,7 +161,6 @@ export default () => {
                     )
                 })
             }
-            <br />
             <br />
             <label>测试用例</label>
             {
@@ -227,7 +230,7 @@ export default () => {
                             name="inputnum" 
                             label="所需填入代码段数" 
                           />
-                          <ProFormText
+                          <ProFormTextArea
                             name="answers"
                             width="xl"
                             label="答案"
@@ -251,7 +254,7 @@ export default () => {
                               width="xl" 
                               name="limits" 
                               label="限制条件" 
-                              tooltip="时间限制以ms为单位，内存限制以kb为单位。每个标签以回车（enter）键为结束"
+                              tooltip="时间限制以ms为单位，内存限制以mb为单位。每个标签以回车（enter）键为结束"
                           />
                           <ProFormCheckbox.Group
                             width={700}

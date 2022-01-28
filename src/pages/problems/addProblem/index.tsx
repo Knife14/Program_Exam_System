@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { message, Tabs, Space } from 'antd';
+import { message, Tabs, Space, Modal } from 'antd';
 import ProForm, {
     ProFormSwitch,
     ProFormText,
@@ -35,8 +35,6 @@ export default () => {
     '拒绝采样', '数据库设计', '数据流', '交互', '脑筋急转弯', '迭代器', 
     '多线程', 'Shell', '其他'
   ];
-
-  let codeRef: any;
 
   return (
     <div>
@@ -83,7 +81,7 @@ export default () => {
                 name="content"
                 label="内容"
                 rules={[{ required: true, message: '请输入题目内容！' }]}
-                tooltip="输入框右下角可以自由拉伸；若是代码段，考生所需填代码以 ___; 表示（3条下划线）"
+                tooltip="输入框右下角可以自由拉伸；若是代码段，考生所需填代码以 ___ 表示（3条下划线）"
             />
             <ProFormText 
                 width="xl" 
@@ -113,7 +111,7 @@ export default () => {
                 width="xl" 
                 name="limits" 
                 label="限制条件" 
-                tooltip="时间限制以ms为单位，内存限制以kb为单位。每个标签以回车（enter）键为结束"
+                tooltip="时间限制以ms为单位，内存限制以mb为单位。每个标签以回车（enter）键为结束"
             />
             <ProFormCheckbox.Group
               width={700}
