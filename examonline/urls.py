@@ -19,5 +19,6 @@ urlpatterns = [
     path('getthePro', views.get_thePro, name='getthePro'),
     path('deletePro', views.delete_pro, name='deletePro'),
     path('changePro', views.change_pro, name='changePro'),
+    path('addTest', views.add_test, name='addTest'),
     path('testProgram', views.test_program, name='testProgram'),
 ]

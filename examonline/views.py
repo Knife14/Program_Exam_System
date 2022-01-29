@@ -42,7 +42,7 @@ def login(request):
         currentUSER = list(UserInfo.objects.filter(userID=userID).values()).pop()
         response = dict()
 
-        if currentUSER['password'] == password:
+        if currentUSER['password'] == password and not currentUSER['is_online']:
             # 创建token
             currentUSER_token = create_token(userID)
 
@@ -76,7 +76,7 @@ def current_user(request):
     # token_status = check_token(request_token)  # 解密并检验token
     userID = get_username(request_token)
 
-    if userID and list(UserInfo.objects.filter(userID=userID).values('is_online')).pop()['is_online']:
+    if userID and UserInfo.objects.get(userID=userID).is_online:
         response['success'] = True
         response['data'] = dict()
 
@@ -481,7 +481,7 @@ http: put
 content: tqType / name / tags / content / answer / limit / cases / examples  / creator
 '''
 def add_problem(request):
-    assert request.method == 'POST'
+    assert request.method == 'PUT'
     response = dict()
 
     # 处理 token 
@@ -559,7 +559,6 @@ def add_problem(request):
                         creator=creator,
                     )
             
-
             response['status'] = 'ok'
             return HttpResponse(json.dumps(response), status=200)
     except:
@@ -732,6 +731,16 @@ def delete_pro(request):
     except:
         response['status'] = 'error'
         return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/addTest
+use: 用于创建考试
+http: PUT
+content: name / datetime(length == 2) / type(自由/综合) / tags && nums
+'''
+def add_test(request):
+    pass
 
 
 '''
