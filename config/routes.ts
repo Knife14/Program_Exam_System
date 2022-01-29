@@ -24,50 +24,7 @@
     icon: 'smile',
     component: './Welcome',
   },
-  {
-    name: 'StuCenter',
-    icon: 'bars',
-    path: '/student/center',
-    access: 'canStudent',
-    component: './student/center',
-  },
-  {
-    name: 'TeaCenter',
-    icon: 'bars',
-    path: '/teacher/center',
-    access: 'canTeacher',
-    component: './teacher/center',
-  },
-  // {
-  //   path: '/admin',
-  //   name: 'admin',
-  //   icon: 'crown',
-  //   access: 'canAdmin',
-  //   component: './Admin',
-  //   routes: [
-  //     {
-  //       path: '/admin/sub-page',
-  //       name: 'sub-page',
-  //       icon: 'smile',
-  //       component: './Welcome',
-  //     },
-  //     {
-  //       component: './404',
-  //     },
-  //   ],
-  // },
-  // {
-  //   name: 'list.table-list',
-  //   icon: 'table',
-  //   path: '/list',
-  //   component: './TableList',
-  // },
-  // {
-  //   name: 'demo',
-  //   path: '/demo',
-  //   icon: 'star',
-  //   component: './demo/',
-  // },
+  // admin
   {
     name: 'UserList',
     path: '/admin/UserList',
@@ -92,32 +49,87 @@
   },
   {
     name: 'ProList',
-    path: '/ProList',
+    path: '/admin/ProList',
     icon: 'plus',
-    access: 'canTeacher' + 'canAdmin',
+    access: 'canAdmin',
     component: './problems/problemsList',
   },
   {
-    path: '/addProblem',
-    access: 'canTeacher' + 'canAdmin',
+    path: '/admin/addProblem',
+    access: 'canAdmin',
     component: './problems/addProblem',
   },
   {
-    path: '/changePro',
-    access: 'canTeacher' + 'canAdmin',
+    path: '/admin/changePro',
+    access: 'canAdmin',
     component: './problems/changePro',
   },
   {
-    path: '/deletePro',
-    access: 'canTeacher' + 'canAdmin',
+    path: '/admin/deletePro',
+    access: 'canAdmin',
     component: './problems/deletePro',
   },
   {
     name: 'ExamList',
-    path: '/ExamList',
+    path: '/admin/ExamList',
     icon: 'code',
-    access: 'canTeacher' + 'canAdmin',
-    component: './teacher/TeaExamList',
+    access: 'canAdmin',
+    component: './exam/examList',
+  },
+  {
+    path: '/admin/addExam',
+    access: 'canAdmin',
+    component: './exam/addExam',
+  },
+  // teacher
+  {
+    name: 'TeaCenter',
+    icon: 'bars',
+    path: '/teacher/center',
+    access: 'canTeacher',
+    component: './teacher/center',
+  },
+  {
+    name: 'ProList',
+    path: '/teacher/ProList',
+    icon: 'plus',
+    access: 'canTeacher',
+    component: './problems/problemsList',
+  },
+  {
+    path: '/teacher/addProblem',
+    access: 'canTeacher',
+    component: './problems/addProblem',
+  },
+  {
+    path: '/teacher/changePro',
+    access: 'canTeacher',
+    component: './problems/changePro',
+  },
+  {
+    path: '/teacher/deletePro',
+    access: 'canTeacher',
+    component: './problems/deletePro',
+  },
+  {
+    name: 'ExamList',
+    path: '/teacher/ExamList',
+    icon: 'code',
+    access: 'canTeacher',
+    component: './exam/examList',
+  },
+  {
+    path: '/teacher/addExam',
+    access: 'canTeacher',
+    component: './exam/addExam',
+  },
+  // student
+  {
+    name: 'StuCenter',
+    icon: 'bars',
+    path: '/student/center',
+    access: 'canStudent',
+    component: './student/center',
   },
   {
     name: 'StuExamList',
@@ -127,9 +139,9 @@
     component: './student/StuExamList',
   },
   {
-    path: '/student/exam',
+    path: '/student/stuExam',
     access: 'canStudent',
-    component: './student/exam',
+    component: './student/stuExam',
   },
   {
     path: '/',

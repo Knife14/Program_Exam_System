@@ -12,14 +12,14 @@ export async function getProblems(options?: { [key: string]: any }) {
   });
 }
 
-/** 添加试题 POST /examonline/addProblem */
+/** 添加试题 PUT /examonline/addProblem */
 export async function addProblem(body: { [key: string]: any}, options?: { [key: string]: any }) {
   return request<API.NothingResponse>('/examonline/addProblem', {
     headers:{
       'Content-Type': 'application/x-www-form-urlencoded',
       'authorization':`Bearer ${localStorage.getItem('token')}`
     },
-    method: 'POST',
+    method: 'PUT',
     data: body,
     ...(options || {}),
   });
@@ -59,6 +59,19 @@ export async function deletePro(body: any, options?: { [key: string]: any }) {
       'authorization':`Bearer ${localStorage.getItem('token')}`
     },
     method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 添加考试 PUT /examonline/addTest */
+export async function addTest(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/addTest', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'PUT',
     data: body,
     ...(options || {}),
   });

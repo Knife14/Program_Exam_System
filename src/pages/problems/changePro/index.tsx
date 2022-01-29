@@ -30,20 +30,25 @@ export default () => {
     let examples = [];
     let proType: string;
 
-    const saved_tags = [
-        '数组', '字符串', '排序', '矩阵', '模拟', '枚举', '字符串匹配', 
-        '桶排序', '计数排序', '基数排序', '动态规划', '深度优先搜索', 
-        '广度优先搜索', '贪心', '二分查找', '回溯', '递归', '分治', 
-        '记忆化搜索', '归并排序', '快速选择', '哈希表', '树', '二叉树', 
-        '栈', '堆(优先队列)', '图', '链表', '二叉搜索树', '单调栈', 
-        '有序集合', '队列', '拓扑排序', '最短路', '单调队列', '双向链表', 
-        '欧拉回路', '强连通分量', '双连通分量', '并查集', '字典树', '线段树',
-        '树状数组', '后缀数组', '双指针', '位运算', '前缀和', '滑动窗口', 
-        '计数', '状态压缩', '哈希函数', '滚动哈希', '扫描线', '数学', 
-        '几何博弈', '组合数学', '随机化', '数论', '概率与统计', '水塘抽样', 
-        '拒绝采样', '数据库设计', '数据流', '交互', '脑筋急转弯', '迭代器', 
-        '多线程', 'Shell', '其他'
-      ];
+    const tags_list = [
+      '数组', '字符串', '排序', '矩阵', '模拟', '枚举', '字符串匹配', 
+      '桶排序', '计数排序', '基数排序', '动态规划', '深度优先搜索', 
+      '广度优先搜索', '贪心', '二分查找', '回溯', '递归', '分治', 
+      '记忆化搜索', '归并排序', '快速选择', '哈希表', '树', '二叉树', 
+      '栈', '堆(优先队列)', '图', '链表', '二叉搜索树', '单调栈', 
+      '有序集合', '队列', '拓扑排序', '最短路', '单调队列', '双向链表', 
+      '欧拉回路', '强连通分量', '双连通分量', '并查集', '字典树', '线段树',
+      '树状数组', '后缀数组', '双指针', '位运算', '前缀和', '滑动窗口', 
+      '计数', '状态压缩', '哈希函数', '滚动哈希', '扫描线', '数学', 
+      '几何博弈', '组合数学', '随机化', '数论', '概率与统计', '水塘抽样', 
+      '拒绝采样', '数据库设计', '数据流', '交互', '脑筋急转弯', '迭代器', 
+      '多线程', 'Shell', '其他'
+    ];
+    let tags_dict = {};
+  
+    for (let tag of tags_list){
+      tags_dict[tag] = tag;
+    }
 
     useEffect(async () => {
         var msg = await getthePro(proID);
@@ -121,7 +126,7 @@ export default () => {
                     name="tags"
                     layout="horizontal"
                     label="标签"
-                    options={saved_tags}
+                    options={tags_list}
                     value={proData['tags']}
                     tooltip="请不要在这里修改！"
                 />
@@ -211,12 +216,12 @@ export default () => {
                               label="名称" 
                               // rules={[{ required: true, message: '请输入题目名称！' }]}
                           />
-                          <ProFormCheckbox.Group
-                            width={700}
+                          <ProFormSelect
+                            width="xl"
+                            mode="tags"
                             name="tags"
-                            layout="horizontal"
                             label="标签"
-                            options={saved_tags}
+                            valueEnum={tags_dict}
                           />
                           <ProFormTextArea
                               width="xl"
@@ -256,12 +261,12 @@ export default () => {
                               label="限制条件" 
                               tooltip="时间限制以ms为单位，内存限制以mb为单位。每个标签以回车（enter）键为结束"
                           />
-                          <ProFormCheckbox.Group
-                            width={700}
+                          <ProFormSelect
+                            width="xl"
+                            mode="tags"
                             name="tags"
-                            layout="horizontal"
                             label="标签"
-                            options={saved_tags}
+                            valueEnum={tags_dict}
                           />
                           <ProFormTextArea
                               width="xl"

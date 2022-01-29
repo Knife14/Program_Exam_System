@@ -1,18 +1,8 @@
 import React from 'react';
-import { Button} from 'antd';
+import { Button } from 'antd';
 import { Link } from 'umi';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-
-// 表格列配置
-export type TableListItem = {
-    key: number;
-    name: string;
-    creator: string;
-    status: string;
-    createdAt: number;
-    memo: string;
-  };
 
 // 状态数
 const valueEnum = {
@@ -21,11 +11,22 @@ const valueEnum = {
   2: 'past',
 };
 
+// 表格列配置
+export type TableListItem = {
+    key: number;
+    name: string;
+    creator: string;
+    status: string;
+    createdTime: number;
+    startTime: number;
+    endTime: number;
+  };
+
 // 高级表格配置
 const columns: ProColumns<TableListItem>[] = [
   {
     title: '考试名称',
-    width: 500,
+    width: 350,
     dataIndex: 'name',
     render: (_) => <Link target = "_blank" to="./examContent">{_}</Link>,
   },
@@ -41,6 +42,30 @@ const columns: ProColumns<TableListItem>[] = [
     },
   },
   {
+    title: (
+      <>
+        开始时间
+      </>
+    ),
+    width: 100,
+    key: 'since',
+    dataIndex: 'startTime',
+    valueType: 'date',
+    sorter: (a, b) => a.startTime - b.startTime,
+  },
+  {
+    title: (
+      <>
+        结束时间
+      </>
+    ),
+    width: 100,
+    key: 'since',
+    dataIndex: 'endTime',
+    valueType: 'date',
+    sorter: (a, b) => a.endTime - b.endTime,
+  },
+  {
     title: '创建者',
     width: 80,
     dataIndex: 'creator',
@@ -53,7 +78,7 @@ const columns: ProColumns<TableListItem>[] = [
     ),
     width: 100,
     key: 'since',
-    dataIndex: 'createdAt',
+    dataIndex: 'createdTime',
     valueType: 'date',
     sorter: (a, b) => a.createdAt - b.createdAt,
   },
@@ -70,22 +95,8 @@ const columns: ProColumns<TableListItem>[] = [
   },
 ];
 
-// 创建者具体数据
-const creators = ['开发者'];
-
 // 表格数据项
 const tableListDataSource: TableListItem[] = [];
-
-for (let i = 0; i < 1; i += 1) {
-  tableListDataSource.push({
-    key: i,
-    name: '考试测试链接',
-    creator: creators[Math.floor(Math.random() * creators.length)],
-    status: valueEnum[Math.floor(Math.random() * 10) % 3],
-    createdAt: Date.now() - Math.floor(Math.random() * 100000),
-    memo: i % 2 === 1 ? '很长很长很长很长很长很长很长的文字要展示但是要留下尾巴' : '简短备注文案',
-  });
-}
 
 export default () => {
   return (
@@ -106,9 +117,9 @@ export default () => {
       search={false}
       dateFormatter="string"
       toolBarRender={() => [
-        <Button type="primary" key="primary">
+        <Link target = "_blank" to="./addExam"><Button type="primary" key="primary">
           创建考试
-        </Button>,
+        </Button></Link>,
       ]}
     />
   );
