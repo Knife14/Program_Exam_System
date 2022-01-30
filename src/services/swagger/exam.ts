@@ -64,6 +64,18 @@ export async function deletePro(body: any, options?: { [key: string]: any }) {
   });
 }
 
+/** 获取所有考试 GET /examonline/getTests */
+export async function getTests(options?: { [key: string]: any }) {
+  return request<any>('/examonline/getTests', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 /** 添加考试 PUT /examonline/addTest */
 export async function addTest(body: any, options?: { [key: string]: any }) {
   return request<API.NothingResponse>('/examonline/addTest', {

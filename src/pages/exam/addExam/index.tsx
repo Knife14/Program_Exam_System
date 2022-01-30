@@ -16,7 +16,7 @@ import ProForm, {
     ProFormDateTimeRangePicker,
     BetaSchemaForm,
   } from '@ant-design/pro-form';
-import { addProblem } from '../../../services/swagger/exam';
+import { addTest } from '../../../services/swagger/exam';
 
 type TestType = '综合组卷' | '自由组卷';
 type DataItem = {
@@ -54,15 +54,17 @@ export default () => {
             // test
             // let send_data = value;
             // send_data['type'] = testType; 
-            console.log(value);
+            // console.log(value);
 
             // value['Type'] = proType;
-            // let msg = await addProblem(value);
-            // if (msg.status === 'ok') {
-            //     alert('添加成功！');
-            // } else {
-            //     alert('添加失败！');
-            // }
+            let msg = await addTest(value);
+            if (msg.status === 'ok') {
+                alert('添加成功！');
+            } else if (msg.status === 'num error') {
+                alert('试题数目出错！请按照规定，出题数确保为10题！');
+            } else {
+                alert('添加失败！');
+            } 
         }}
         onValuesChange={(_, values) => {
             if (values['type'] === '自由组卷') {
@@ -85,6 +87,13 @@ export default () => {
             name="datetime" 
             label="开始截止时间" 
             rules={[{ required: true, message: '请输入考试开始截止时间！' }]}
+        />
+        <ProFormText
+            width="xl" 
+            name="duratime" 
+            label="考试持续时间" 
+            rules={[{ required: true, message: '请输入考试持续时间！' }]}
+            tooltip="以分钟为单位，如考试时长为90分钟，即输入 90 即可"
         />
         <ProFormRadio.Group
             width="xl"

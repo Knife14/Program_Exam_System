@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from 'antd';
 import { Link } from 'umi';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
+import { getTests } from '../../../services/swagger/exam';
+import 
 
 // 状态数
 const valueEnum = {
@@ -26,13 +28,13 @@ export type TableListItem = {
 const columns: ProColumns<TableListItem>[] = [
   {
     title: '考试名称',
-    width: 350,
+    width: 250,
     dataIndex: 'name',
     render: (_) => <Link target = "_blank" to="./examContent">{_}</Link>,
   },
   {
     title: '状态',
-    width: 80,
+    width: 50,
     dataIndex: 'status',
     initialValue: 'close',
     valueEnum: {
@@ -47,10 +49,10 @@ const columns: ProColumns<TableListItem>[] = [
         开始时间
       </>
     ),
-    width: 100,
+    width: 150,
     key: 'since',
     dataIndex: 'startTime',
-    valueType: 'date',
+    valueType: 'datetime',
     sorter: (a, b) => a.startTime - b.startTime,
   },
   {
@@ -59,28 +61,21 @@ const columns: ProColumns<TableListItem>[] = [
         结束时间
       </>
     ),
-    width: 100,
+    width: 150,
     key: 'since',
     dataIndex: 'endTime',
-    valueType: 'date',
+    valueType: 'datetime',
     sorter: (a, b) => a.endTime - b.endTime,
   },
   {
-    title: '创建者',
+    title: '创建者编号',
     width: 80,
-    dataIndex: 'creator',
+    dataIndex: 'creatorID',
   },
   {
-    title: (
-      <>
-        创建时间
-      </>
-    ),
-    width: 100,
-    key: 'since',
-    dataIndex: 'createdTime',
-    valueType: 'date',
-    sorter: (a, b) => a.createdAt - b.createdAt,
+    title: '创建者姓名',
+    width: 80,
+    dataIndex: 'creatorName',
   },
   {
     title: '操作',
@@ -99,6 +94,24 @@ const columns: ProColumns<TableListItem>[] = [
 const tableListDataSource: TableListItem[] = [];
 
 export default () => {
+
+  useEffect(async () => {
+    tableListDataSource.splice(0, tableListDataSource.length);
+    
+    let msg = await getTests();
+
+    for (let test of msg['data']) {
+      var stime = new Date(test['startTime']);
+      var etime = new Date(test['endTime']);
+
+      var status: any;
+
+      
+
+      tableListDataSource.push(test);
+    }
+  }, []);
+
   return (
     <ProTable<TableListItem>
       columns={columns}
