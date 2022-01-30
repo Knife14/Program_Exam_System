@@ -1,11 +1,2 @@
-def fib(n: int) -> int:
-    nums = []
-    
-
-
-    for i in range(1, 10 ** n):
-        nums.append(i)
-    
-    return nums
-
-print(fib(2))
+a = '2022-01-30 12:30:00'
+print(len(a))

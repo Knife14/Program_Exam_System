@@ -3,12 +3,6 @@ from django.db.models.expressions import F
 
 # Create your models here.
 
-# 用户事件表：维护用户登录、退出登录、参加考试、创建题目、创造考试等行为
-class UserEvent(models.Model):
-    userID = models.CharField(max_length=11, blank=False)  # 非空且唯一，ID，不可变
-    eventType = models.CharField(max_length=20, blank=False)  # 事件类型，非空
-    addtime = models.DateTimeField(auto_now_add=True)  # 记录第一次入库的时间
-
 # 用户信息表
 class UserInfo(models.Model):
     identify = models.CharField(max_length=10, blank=False)  # 非空，使用者身份，三种：teacher、student、admin

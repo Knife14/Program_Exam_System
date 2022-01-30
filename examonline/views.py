@@ -734,13 +734,174 @@ def delete_pro(request):
 
 
 '''
-url: /examonline/addTest
+url: /examonline/getExams
+use: 用于展示考试
+http: GET
+'''
+def get_exams(request):
+    assert request.method == 'GET'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+
+    all_tests = list(ExamInfo.objects.filter().values())
+
+    # 数据库日期类型不可被json转换
+    response['data'] = list()
+    for test in all_tests:
+        tmp = dict()
+
+        tmp['name'] = test['name']
+        tmp['examID'] = test['examID']
+        tmp['startTime'] = str(test['startTime'])[:19]
+        tmp['endTime'] = str(test['endTime'])[:19]
+        tmp['creatorID'] = test['creator']
+        tmp['creatorName'] = UserInfo.objects.get(userID=test['creator']).name
+
+        response['data'].append(tmp)
+    
+    response['success'] = True
+    return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/addExam
 use: 用于创建考试
 http: PUT
 content: name / datetime(length == 2) / type(自由/综合) / tags && nums
 '''
-def add_test(request):
-    pass
+def add_exam(request):
+    assert request.method == 'PUT'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # try:
+    if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher':
+        msg = json.loads(request.body.decode('utf-8'))
+        print(msg)
+        
+        # 考试场次与名称
+        examID = \
+            str(timezone.now().year) + str(timezone.now().month).rjust(2, '0') + str(timezone.now().day).rjust(2, '0') \
+                + str(timezone.now().hour + 8).rjust(2, '0') + str(timezone.now().minute).rjust(2, '0') \
+                    + str(random.randint(0, 100)).rjust(2, '0') \
+                        + ('1' if msg['type'] == '综合组卷' else '2')
+        name = msg['name']
+
+        # 考试开始、结束、持续时间
+        startTime = msg['datetime'][0]
+        endTime = msg['datetime'][1]
+        duraTime = msg['duratime']
+        
+        # 创建者
+        creator = userID
+
+        # 组卷
+        tqlist = set()  # 已选题目列表
+        total, f_total, p_total = 10, 5, 5 # 限制十道题，且填空五道，编码五道
+        if msg['type'] == '综合组卷':
+            while total > 0:
+                pros = list(TestQuestions.objects.filter().values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
+                leng = len(pros)
+
+                tmp = random.randint(0, leng - 1)
+                while pros[tmp]['tqID'] in tqlist:
+                    tmp = random.randint(0, leng - 1)
+                
+                if pros[tmp]['tqType'] == '填空题' and f_total > 0:
+                    tqlist.add(pros[tmp]['tqID'])
+                    f_total -= 1
+                    total -= 1
+                elif pros[tmp]['tqType'] == '编码题' and p_total > 0:
+                    tqlist.add(pros[tmp]['tqID'])
+                    p_total -= 1
+                    total -= 1
+        elif msg['type'] == '自由组卷':
+            for tn in msg['tns']:
+                nums = int(tn['nums'])
+                if total - nums >= 0:
+                    # 检索题库里相关标签的试题
+                    # 字符串匹配 == %content%
+                    pros = list(TestQuestions.objects.filter(tags__contains=tn['tags']).values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
+                    
+                    # 后期引入组卷算法，需要考虑试题当前次数等权重影响
+                    leng = len(pros)
+                    for _ in range(nums):
+                        # 目前先用着随机值组卷
+                        tmp = random.randint(0, leng - 1)
+                        
+                        # 避免试题重复选择
+                        t_chosed = set()  # 当前类型已选择的题目
+                        while pros[tmp]['tqID'] in tqlist:
+                            tmp = random.randint(0, leng - 1)
+                            
+                            # 为防止该标签类型的题目，已经通过别个标签选择时选择进入考试列表
+                            t_chosed.add(pros[tmp]['tqID'])
+                            if len(t_chosed) == leng:
+                                break
+                        if len(t_chosed) == leng:
+                            break
+
+                        if pros[tmp]['tqType'] == '填空题' and f_total >= 1:
+                            f_total -= 1
+                            total -= 1
+                            tqlist.add(pros[tmp]['tqID'])
+                        elif pros[tmp]['tqType'] == '编码题' and p_total >= 1:
+                            p_total -= 1
+                            total -= 1
+                            tqlist.add(pros[tmp]['tqID'])
+                        else:
+                            break
+
+                        print(tqlist)
+                else:
+                    response['status'] = 'num error'
+                    return HttpResponse(json.dumps(response), status=200)
+            
+            # 遍历完要求类型题目后，仍不够十题，将会在题库中任意选取足够题目
+            while total > 0:
+                pros = list(TestQuestions.objects.filter().values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
+                leng = len(pros)
+
+                tmp = random.randint(0, leng - 1)
+                while pros[tmp]['tqID'] in tqlist:
+                    tmp = random.randint(0, leng - 1)
+                
+                if pros[tmp]['tqType'] == '填空题' and f_total > 0:
+                    tqlist.add(pros[tmp]['tqID'])
+                    f_total -= 1
+                    total -= 1
+                elif pros[tmp]['tqType'] == '编码题' and p_total > 0:
+                    tqlist.add(pros[tmp]['tqID'])
+                    p_total -= 1
+                    total -= 1
+
+        # 存入数据库
+        ExamInfo.objects.create(
+            examID=examID,
+            name=name,
+            startTime=startTime,
+            endTime=endTime,
+            duraTime=duraTime,
+            eqlist=list(tqlist),
+            creator=creator,
+        )
+        for tqID in tqlist:
+            curr_question = TestQuestions.objects.get(tqID=tqID)
+            curr_question.aqtimes += 1
+
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
+    # except:
+    #     response['status'] = 'error'
+    #     return HttpResponse(json.dumps(response), status=200)
 
 
 '''
