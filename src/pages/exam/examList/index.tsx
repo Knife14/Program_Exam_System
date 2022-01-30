@@ -3,8 +3,7 @@ import { Button } from 'antd';
 import { Link } from 'umi';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { getTests } from '../../../services/swagger/exam';
-import 
+import { getExams } from '../../../services/swagger/exam';
 
 // 状态数
 const valueEnum = {
@@ -17,6 +16,7 @@ const valueEnum = {
 export type TableListItem = {
     key: number;
     name: string;
+    examID: string;
     creator: string;
     status: string;
     createdTime: number;
@@ -34,9 +34,8 @@ const columns: ProColumns<TableListItem>[] = [
   },
   {
     title: '状态',
-    width: 50,
+    width: 70,
     dataIndex: 'status',
-    initialValue: 'close',
     valueEnum: {
       close: { text: '未开始', status: 'Default' },
       running: { text: '进行中', status: 'Processing' },
@@ -82,11 +81,12 @@ const columns: ProColumns<TableListItem>[] = [
     width: 100,
     key: 'option',
     valueType: 'option',
-    render: () => [
-      <a key="link">编辑</a>,
-      <a key="link2">查阅</a>,
-      <a key="link3">删除</a>,
+    render: (_, record) => [
+      <Link target = "_blank" to = {`./changeExam?proid=${record.examID}`}>编辑</Link>,
+      <Link target = "_blank" to = {`./showExam?proid=${record.examID}`}>查阅</Link>,
+      <Link target = "_blank" to = {`./deleteExam?proid=${record.examID}`}>删除</Link>,
     ],
+    tooltip: '查阅功能为查阅当场考试成绩分析',
   },
 ];
 
@@ -98,16 +98,25 @@ export default () => {
   useEffect(async () => {
     tableListDataSource.splice(0, tableListDataSource.length);
     
-    let msg = await getTests();
+    let msg = await getExams();
 
     for (let test of msg['data']) {
-      var stime = new Date(test['startTime']);
-      var etime = new Date(test['endTime']);
+      // 判断当前状态
+      var stime = new Date(test['startTime']).toString();
+      var etime = new Date(test['endTime']).toString();
+      var currtime = new Date().toString();
 
       var status: any;
 
-      
+      if (currtime < stime) {
+        status = 'close';
+      } else if (currtime > etime) {
+        status = 'path';
+      } else {
+        status = 'running';
+      }
 
+      test['status'] = status;
       tableListDataSource.push(test);
     }
   }, []);

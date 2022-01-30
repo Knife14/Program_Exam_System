@@ -16,7 +16,7 @@ import ProForm, {
     ProFormDateTimeRangePicker,
     BetaSchemaForm,
   } from '@ant-design/pro-form';
-import { addTest } from '../../../services/swagger/exam';
+import { addExam } from '../../../services/swagger/exam';
 
 type TestType = '综合组卷' | '自由组卷';
 type DataItem = {
@@ -57,7 +57,7 @@ export default () => {
             // console.log(value);
 
             // value['Type'] = proType;
-            let msg = await addTest(value);
+            let msg = await addExam(value);
             if (msg.status === 'ok') {
                 alert('添加成功！');
             } else if (msg.status === 'num error') {
