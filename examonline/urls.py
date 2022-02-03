@@ -21,5 +21,8 @@ urlpatterns = [
     path('changePro', views.change_pro, name='changePro'),
     path('getExams', views.get_exams, name='getExams'),
     path('addExam', views.add_exam, name='addExam'),
+    path('gettheExam', views.get_theExam, name='gettheExam'),
+    path('changeExam', views.change_exam, name='changeExam'),
+    path('deleteExam', views.delete_exam, name='deleteExam'),
     path('testProgram', views.test_program, name='testProgram'),
 ]

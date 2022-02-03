@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Collection
 from django.core.signing import dumps
 from django.shortcuts import render
@@ -735,7 +736,7 @@ def delete_pro(request):
 
 '''
 url: /examonline/getExams
-use: 用于展示考试
+use: 用于展示所有考试信息
 http: GET
 '''
 def get_exams(request):
@@ -903,6 +904,139 @@ def add_exam(request):
     #     response['status'] = 'error'
     #     return HttpResponse(json.dumps(response), status=200)
 
+
+'''
+url: /examonline/gettheExam
+use: 用于展示当前考试具体信息，仅服务于管理者端与教师端
+http: POST
+content: examID
+'''
+def get_theExam(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher':
+        response['data'] = dict()
+
+        # 处理发送过来的考试场次ID
+        examID = request.body.decode('utf-8')
+        examContent = ExamInfo.objects.get(examID=examID)
+
+        response['data']['exname'] = examContent.name
+        response['data']['startTime'] = str(examContent.startTime)[:-6]
+        response['data']['endTime'] = str(examContent.endTime)[:-6]
+        response['data']['duraTime'] = examContent.duraTime
+
+        response['data']['exPro'] = list()
+        eqids = json.loads(examContent.eqlist.replace('\'', '\"'))  # json str -> list，引号严格使用双引号
+        for eqid in eqids:
+            curr = TestQuestions.objects.get(tqID=eqid)
+
+            tmp = dict()
+            tmp['eqname'] = curr.name
+            tmp['eqType'] = curr.tqType
+            tmp['tags'] = curr.tags
+            tmp['content'] = curr.content
+            tmp['eqID'] = curr.tqID
+
+            response['data']['exPro'].append(tmp)
+
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=500)
+
+
+'''
+url: /examonline/changeExam
+use: 用于修改当前考试具体信息，仅服务于管理者端与教师端
+http: POST
+content: exname / startTime / endTime / duraTime / eqs(试题列表)
+'''
+def change_exam(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    try:
+        if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+            UserInfo.objects.get(userID=userID).identify == 'teacher':
+            msg = json.loads(request.body.decode('utf-8'))
+            
+            examID = msg['examID']
+            for ex_k, ex_v in msg.items():
+                if ex_k == 'examID':
+                    pass
+                elif ex_k == 'eqname':
+                    # 由于前端组件在不刷新基础上，会保留该项空值，所以要做后端一个判断，以免异常
+                    if len(ex_v) > 0:
+                        ExamInfo.objects.filter(examID=examID).update(name=ex_v, changetime=datetime.now())
+                elif ex_k == 'datetime':
+                    if len(ex_v) > 0:
+                        ExamInfo.objects.filter(examID=examID).update(startTime=ex_v[0], endTime=ex_v[1], changetime=datetime.now())
+                elif ex_k == 'duratime':
+                    if len(ex_v) > 0:
+                        ExamInfo.objects.filter(examID=examID).update(duraTime=ex_v, changetime=datetime.now())
+                elif ex_k == 'eqs':
+                    if len(ex_v) > 0:
+                        eqlist = json.loads(list(ExamInfo.objects.filter(examID=examID).values('eqlist')).pop()['eqlist'].replace('\'', '\"'))
+                        for eqid in ex_v:
+                            for tqID in eqlist:
+                                # 修改项应不在原列表中方可修改成功
+                                if tqID == eqid['nc_eq'] and eqid['wc_eq'] not in eqlist:
+                                    eqlist.remove(tqID)
+                                    eqlist.append(eqid['wc_eq'])
+                                else:
+                                    response['status'] = 'change eqlist error'
+                                    return HttpResponse(json.dumps(response), status=200)
+                        ExamInfo.objects.filter(examID=examID).update(eqlist=eqlist, changetime=datetime.now())
+
+
+            response['status'] = 'ok'
+            return HttpResponse(json.dumps(response), status=200)
+    except:
+        response['status'] = 'error'
+        return HttpResponse(json.dumps(response), status=500)
+
+
+'''
+url: /examonline/deleteExam
+use: 用于删除当前考试
+http: POST
+content: examID
+'''
+def delete_exam(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    try:
+        if UserInfo.objects.get(userID=userID).identify == 'admin' or \
+            UserInfo.objects.get(userID=userID).identify == 'teacher':
+            examID = json.loads(request.body.decode('utf-8'))['examID']
+
+            ExamInfo.objects.filter(examID=examID).delete()
+
+            response['status'] = 'ok'
+            return HttpResponse(json.dumps(response), status=200)
+    except:
+        response['status'] = 'error'
+        return HttpResponse(json.dumps(response), status=200)
 
 '''
 url: /examonline/testProgram
