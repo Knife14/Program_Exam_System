@@ -30,7 +30,7 @@ const columns: ProColumns<TableListItem>[] = [
     title: '考试名称',
     width: 250,
     dataIndex: 'name',
-    render: (_) => <Link target = "_blank" to="./examContent">{_}</Link>,
+    render: (_, record) => <Link target = "_blank" to={`./changeExam?examID=${record.examID}`}>{_}</Link>,
   },
   {
     title: '状态',
@@ -82,9 +82,9 @@ const columns: ProColumns<TableListItem>[] = [
     key: 'option',
     valueType: 'option',
     render: (_, record) => [
-      <Link target = "_blank" to = {`./changeExam?proid=${record.examID}`}>编辑</Link>,
-      <Link target = "_blank" to = {`./showExam?proid=${record.examID}`}>查阅</Link>,
-      <Link target = "_blank" to = {`./deleteExam?proid=${record.examID}`}>删除</Link>,
+      <Link target = "_blank" to = {`./changeExam?examID=${record.examID}`}>编辑</Link>,
+      <Link target = "_blank" to = {`./showExam?examID=${record.examID}`}>查阅</Link>,
+      <Link target = "_blank" to = {`./deleteExam?examID=${record.examID}`}>删除</Link>,
     ],
     tooltip: '查阅功能为查阅当场考试成绩分析',
   },
@@ -102,21 +102,20 @@ export default () => {
 
     for (let test of msg['data']) {
       // 判断当前状态
-      var stime = new Date(test['startTime']).toString();
-      var etime = new Date(test['endTime']).toString();
-      var currtime = new Date().toString();
+      var stime = new Date(test['startTime']);
+      var etime = new Date(test['endTime']);
+      var currtime = new Date();
 
       var status: any;
-
-      if (currtime < stime) {
+      if (currtime.getTime() < stime.getTime()) {
         status = 'close';
-      } else if (currtime > etime) {
+      } else if (currtime.getTime() > etime.getTime()) {
         status = 'path';
       } else {
         status = 'running';
       }
-
       test['status'] = status;
+
       tableListDataSource.push(test);
     }
   }, []);

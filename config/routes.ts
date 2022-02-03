@@ -81,6 +81,16 @@
     access: 'canAdmin',
     component: './exam/addExam',
   },
+  {
+    path: '/admin/changeExam',
+    access: 'canAdmin',
+    component: './exam/changeExam',
+  },
+  {
+    path: '/admin/deleteExam',
+    access: 'canAdmin',
+    component: './exam/deleteExam',
+  },
   // teacher
   {
     name: 'TeaCenter',
@@ -122,6 +132,16 @@
     path: '/teacher/addExam',
     access: 'canTeacher',
     component: './exam/addExam',
+  },
+  {
+    path: '/teacher/changeExam',
+    access: 'canTeacher',
+    component: './exam/changeExam',
+  },
+  {
+    path: '/teacher/deleteExam',
+    access: 'canTeacher',
+    component: './exam/deleteExam',
   },
   // student
   {

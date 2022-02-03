@@ -118,12 +118,12 @@ export default () => {
                 label="限制条件" 
                 tooltip="时间限制以ms为单位，内存限制以mb为单位。每个标签以回车（enter）键为结束"
             />
-            <ProFormCheckbox.Group
-              width={700}
+            <ProFormSelect
+              width="xl"
+              mode="tags"
               name="tags"
-              layout="horizontal"
               label="标签"
-              options={saved_tags}
+              valueEnum={tags_dict}
             />
             <ProFormTextArea
                 width="xl"

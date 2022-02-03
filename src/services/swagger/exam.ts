@@ -89,6 +89,46 @@ export async function addExam(body: any, options?: { [key: string]: any }) {
   });
 }
 
+/** 获取当前考试具体内容 POST /examonline/gettheExam */
+export async function gettheExam(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/gettheExam', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+
+/** 修改考试个别题目 POST /examonline/changeExam */
+export async function changeExam(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/changeExam', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 修改考试个别题目 POST /examonline/deleteExam */
+export async function deleteExam(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/deleteExam', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 考试程序测试 POST /examonline/testProgram */
 export async function testProgram(body: { [key: string]: any}, options?: { [key: string]: any }) {
   return request<API.TestProgram>('/examonline/testProgram', {
