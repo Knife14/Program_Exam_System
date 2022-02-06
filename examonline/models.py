@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.expressions import F
+from django.db.models.fields import TextField
 
 # Create your models here.
 
@@ -35,7 +36,7 @@ class TestQuestions(models.Model):
 
 # 示例表： 一个试题可以有多个不同的示例，一条示例即为一项纪录
 class AnswerExamples(models.Model):
-    tqID = models.CharField(max_length=14, blank=False)  # 对应试题ID，非空且唯一
+    tqID = models.CharField(max_length=14, blank=False)  # 对应试题ID，非空
     cInput = models.TextField()  # 输入，以list形式存储，一个元素即为一个参数
     cOutput = models.TextField()  # 输出，以list形式存储，一个元素即为一个参数
     creator = models.CharField(max_length=11, blank=False)  # 示例创造者ID，非空
@@ -44,7 +45,7 @@ class AnswerExamples(models.Model):
 
 # 测试用例表：一个试题可以有多个不同的测试用例，一条测试用例即为一项记录
 class TestExamples(models.Model):
-    tqID = models.CharField(max_length=14, blank=False)  # 对应试题ID，非空且唯一
+    tqID = models.CharField(max_length=14, blank=False)  # 对应试题ID，非空
     cInput = models.TextField()  # 输入，以list形式存储，一个元素即为一个参数
     cOutput = models.TextField()  # 输出，以list形式存储，一个元素即为一个参数
     creator = models.CharField(max_length=11, blank=False)  # 测试用例创造者ID，非空
@@ -64,9 +65,18 @@ class ExamInfo(models.Model):
     changetime = models.DateTimeField(auto_now=True)  # 修改记录的时间
 
 # 学生参与考试情况表：仅保存进入、退出、异常记录
-class StuExamSituation(models.Model):
+class StuExamEvent(models.Model):
     userID = models.CharField(max_length=11, blank=False)  # 学生ID，非空
     examID = models.CharField(max_length=13, blank=False)  # 考试场次ID，非空
     eventType = models.CharField(max_length=20, blank=False)  # 事件类型，非空：进入考试、退出考试、行为异常
     event = models.CharField(max_length=100)  # 事件发生内容，只用于异常记录
     addTime = models.DateTimeField(auto_now_add=True)  # 事件发生时间
+
+# 学生考试提交记录：仅保存学生提交信息
+class StuExamSubmit(models.Model):
+    userID = models.CharField(max_length=11, blank=False)  # 学生ID，非空
+    examID = models.CharField(max_length=13, blank=False)  # 考试场次ID，非空
+    tqID = models.CharField(max_length=14, blank=False)  # 对应试题ID，非空
+    content = models.TextField()  # 提交内容
+    score = models.IntegerField()  # 该次提交所获分值，最终得分按照当场该题提交最高得分计算
+    addTime = models.DateTimeField(auto_now_add=True)  # 提交时间
