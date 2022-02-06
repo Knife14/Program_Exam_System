@@ -129,6 +129,19 @@ export async function deleteExam(body: any, options?: { [key: string]: any }) {
   });
 }
 
+/** 学生端获取考试内容 POST /examonline/stuGetExam */
+export async function stuGetExam(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/stuGetExam', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 考试程序测试 POST /examonline/testProgram */
 export async function testProgram(body: { [key: string]: any}, options?: { [key: string]: any }) {
   return request<API.TestProgram>('/examonline/testProgram', {

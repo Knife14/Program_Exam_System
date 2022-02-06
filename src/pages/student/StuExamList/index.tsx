@@ -1,17 +1,20 @@
-import React from 'react';
-import { Button} from 'antd';
+import React, { useState, useEffect }  from 'react';
+import { Button } from 'antd';
 import { Link } from 'umi';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
+import { getExams } from '../../../services/swagger/exam';
 
 // 表格列配置
 export type TableListItem = {
     key: number;
     name: string;
+    examID: string;
     creator: string;
     status: string;
-    createdAt: number;
-    memo: string;
+    createdTime: number;
+    startTime: number;
+    endTime: number;
   };
 
 // 状态数
@@ -25,15 +28,14 @@ const valueEnum = {
 const columns: ProColumns<TableListItem>[] = [
   {
     title: '考试名称',
-    width: 500,
+    width: 250,
     dataIndex: 'name',
-    render: (_) => <Link target = "_blank" to="./stuExam">{_}</Link>,
+    render: (_, record) => <Link target = "_blank" to={`./ExamContent?examID=${record.examID}`}>{_}</Link>,
   },
   {
     title: '状态',
-    width: 80,
+    width: 70,
     dataIndex: 'status',
-    initialValue: 'close',
     valueEnum: {
       close: { text: '未开始', status: 'Default' },
       running: { text: '进行中', status: 'Processing' },
@@ -41,42 +43,80 @@ const columns: ProColumns<TableListItem>[] = [
     },
   },
   {
-    title: '创建者',
-    width: 80,
-    dataIndex: 'creator',
+    title: (
+      <>
+        开始时间
+      </>
+    ),
+    width: 150,
+    key: 'since',
+    dataIndex: 'startTime',
+    valueType: 'datetime',
+    sorter: (a, b) => a.startTime - b.startTime,
   },
   {
     title: (
       <>
-        创建时间
+        结束时间
       </>
     ),
-    width: 100,
+    width: 150,
     key: 'since',
-    dataIndex: 'createdAt',
-    valueType: 'date',
-    sorter: (a, b) => a.createdAt - b.createdAt,
+    dataIndex: 'endTime',
+    valueType: 'datetime',
+    sorter: (a, b) => a.endTime - b.endTime,
+  },
+  {
+    title: '创建者编号',
+    width: 80,
+    dataIndex: 'creatorID',
+  },
+  {
+    title: '创建者姓名',
+    width: 80,
+    dataIndex: 'creatorName',
+  },
+  {
+    title: '操作',
+    width: 100,
+    key: 'option',
+    valueType: 'option',
+    render: (_, record) => [
+      <Link target = "_blank" to = {`./ExamContent?examID=${record.examID}`}>参加考试</Link>,
+    ],
   },
 ];
-
-// 创建者具体数据
-const creators = ['开发者'];
 
 // 表格数据项
 const tableListDataSource: TableListItem[] = [];
 
-for (let i = 0; i < 1; i += 1) {
-  tableListDataSource.push({
-    key: i,
-    name: '考试测试链接',
-    creator: creators[Math.floor(Math.random() * creators.length)],
-    status: valueEnum[Math.floor(Math.random() * 10) % 3],
-    createdAt: Date.now() - Math.floor(Math.random() * 100000),
-    memo: i % 2 === 1 ? '很长很长很长很长很长很长很长的文字要展示但是要留下尾巴' : '简短备注文案',
-  });
-}
-
 export default () => {
+  useEffect(async () => {
+    tableListDataSource.splice(0, tableListDataSource.length);
+    
+    let msg = await getExams();
+
+    for (let test of msg['data']) {
+      // 判断当前状态
+      var stime = new Date(test['startTime']);
+      var etime = new Date(test['endTime']);
+      var currtime = new Date();
+
+      var status: any;
+      if (currtime.getTime() < stime.getTime()) {
+        status = 'close';
+      } else if (currtime.getTime() > etime.getTime()) {
+        status = 'past';
+      } else {
+        status = 'running';
+      }
+      test['status'] = status;
+
+      tableListDataSource.push(test);
+    }
+  }, []);
+
+
   return (
     <ProTable<TableListItem>
       columns={columns}

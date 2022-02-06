@@ -110,7 +110,7 @@ export default () => {
       if (currtime.getTime() < stime.getTime()) {
         status = 'close';
       } else if (currtime.getTime() > etime.getTime()) {
-        status = 'path';
+        status = 'past';
       } else {
         status = 'running';
       }

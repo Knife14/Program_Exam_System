@@ -159,10 +159,12 @@
     component: './student/StuExamList',
   },
   {
-    path: '/student/stuExam',
+    path: '/student/ExamContent',
     access: 'canStudent',
-    component: './student/stuExam',
+    component: './student/ExamContent',
+    menuRender: false,
   },
+  // all
   {
     path: '/',
     redirect: '/welcome',
