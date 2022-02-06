@@ -63,11 +63,10 @@ class ExamInfo(models.Model):
     addtime = models.DateTimeField(auto_now_add=True)  # 记录第一次入库的时间
     changetime = models.DateTimeField(auto_now=True)  # 修改记录的时间
 
-# 学生参与考试情况表：存储考试情况以及进行考后分析，一个学生参加一场考试即为一条记录
+# 学生参与考试情况表：仅保存进入、退出、异常记录
 class StuExamSituation(models.Model):
     userID = models.CharField(max_length=11, blank=False)  # 学生ID，非空
     examID = models.CharField(max_length=13, blank=False)  # 考试场次ID，非空
-    totalScore = models.IntegerField()  # 该场考试总成绩
-    anoTimes = models.IntegerField()  # 该场考试异常情况次数：跳出屏幕、监测出摄像头异常等
-    qSituation = models.TextField()  # 该场考试得分情况：用于考后成绩分析，以[tqid: 得分]形式保存
-    time = models.DateTimeField(auto_now=True)  # 修改记录的时间
+    eventType = models.CharField(max_length=20, blank=False)  # 事件类型，非空：进入考试、退出考试、行为异常
+    event = models.CharField(max_length=100)  # 事件发生内容，只用于异常记录
+    addTime = models.DateTimeField(auto_now_add=True)  # 事件发生时间

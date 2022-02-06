@@ -24,5 +24,6 @@ urlpatterns = [
     path('gettheExam', views.get_theExam, name='gettheExam'),
     path('changeExam', views.change_exam, name='changeExam'),
     path('deleteExam', views.delete_exam, name='deleteExam'),
+    path('stuGetExam', views.stu_getExam, name='stuGetExam'),
     path('testProgram', views.test_program, name='testProgram'),
 ]

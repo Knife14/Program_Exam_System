@@ -1,4 +1,5 @@
 from datetime import datetime
+from time import strptime
 from typing import Collection
 from django.core.signing import dumps
 from django.shortcuts import render
@@ -736,7 +737,7 @@ def delete_pro(request):
 
 '''
 url: /examonline/getExams
-use: 用于展示所有考试信息
+use: 用于展示所有考试信息，可用于所有身份
 http: GET
 '''
 def get_exams(request):
@@ -1012,7 +1013,7 @@ def change_exam(request):
 
 '''
 url: /examonline/deleteExam
-use: 用于删除当前考试
+use: 用于删除当前考试，仅服务于管理者端与教师端
 http: POST
 content: examID
 '''
@@ -1037,6 +1038,47 @@ def delete_exam(request):
     except:
         response['status'] = 'error'
         return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/stuGetExam
+use: 用于获取当前考试具体信息，仅服务于学生端，由于时间关系，需要另外写一个接口特殊处理
+http: POST
+content: examID
+'''
+def stu_getExam(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    examID = request.body.decode('utf-8')
+    curr_exam = ExamInfo.objects.get(examID=examID)
+
+    # 判断开始结束时间
+    # 格式化时间转换为时间戳： str格式化时间 -> 映射tuple（year、month...） -> 时间戳
+    stime = int(time.mktime(time.strptime(str(curr_exam.startTime), '%Y-%m-%d %H:%M:%S')))
+    etime = int(time.mktime(time.strptime(str(curr_exam.endTime), '%Y-%m-%d %H:%M:%S')))
+    ntime = int(time.mktime(time.strptime(str(timezone.now())[:-7], '%Y-%m-%d %H:%M:%S')))
+
+    if ntime > etime or ntime < stime:
+        response['status'] = 'time error'
+        return HttpResponse(json.dumps(response), status=200)
+
+    if UserInfo.objects.get(userID=userID).identify == 'student':
+        response['data'] = dict()
+
+        response['data']['test'] = 'test'
+
+        response['status'] = 'success'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=500)
+
 
 '''
 url: /examonline/testProgram
