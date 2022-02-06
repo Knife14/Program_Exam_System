@@ -61,7 +61,7 @@ const CodeMirrorBox = forwardRef((props, ref) => {
   };
 
   useImperativeHandle(ref, () => ({
-    getExamValuse: () => handleSubmit(),
+    getExamValue: () => handleSubmit(),
   }));
 
   return (

@@ -142,9 +142,27 @@ export async function stuGetExam(body: any, options?: { [key: string]: any }) {
   });
 }
 
-/** 考试程序测试 POST /examonline/testProgram */
-export async function testProgram(body: { [key: string]: any}, options?: { [key: string]: any }) {
-  return request<API.TestProgram>('/examonline/testProgram', {
+/** 考试编码题测试 POST /examonline/testProgram */
+export async function testProgram(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/testProgram', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+
+/** 考试填空题提交 POST /examonline/testFill */
+export async function testFill(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/testFill', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
     method: 'POST',
     data: body,
     ...(options || {}),
