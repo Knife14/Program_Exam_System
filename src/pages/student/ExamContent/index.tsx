@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { message, Tabs, Space, Descriptions, Button, Card, Layout } from 'antd';
+import { message, Tabs, Space, Descriptions, Button, Card, Layout, Alert } from 'antd';
 import ProForm, {
     ProFormSwitch,
     ProFormText,
@@ -24,6 +24,7 @@ import { stuGetExam, testProgram, testFill } from '../../../services/swagger/exa
 export default () => {
     var [examData, SetData] = useState([]);
     var [ExamStatus, SetExamStatus] = useState('unknown');
+    var [SubmitStatus, SetSubmitStatus] = useState('unknown');
 
     const addr = useLocation();
     const examID = addr.query['examID'].toString();
@@ -38,7 +39,7 @@ export default () => {
     }, []);
 
     // 提交编码题
-    // 还要进行补充撒
+
     let codeRef: any;
     var submitCode = async () => {
         const values = codeRef.getExamValue();
@@ -102,8 +103,17 @@ export default () => {
                                             <ProForm
                                                 name="FillAnswers"
                                                 onFinish={async (value) => {
-                                                    // 还要进行补充撒
+                                                    value['tqID'] = examData[i]['eqID'];
+                                                    value['examID'] = examID;
                                                     let res = await testFill(value);
+
+                                                    if ( res['status'] === 'fill submit success') {
+                                                        SetSubmitStatus('fill submit success');
+                                                    } else if (res['status'] === 'fill write wrong'){
+                                                        SetSubmitStatus('fill write wrong');
+                                                    } else {
+                                                        SetSubmitStatus('submit error');
+                                                    }
                                                 }}
                                             >
                                                 <ProFormList
@@ -139,6 +149,17 @@ export default () => {
                                                     </ProFormGroup>
                                                 </ProFormList>
                                             </ProForm>
+                                            <br />
+                                            { SubmitStatus === 'fill submit success'  &&
+                                                <div>  
+                                                    <Alert style={{ width: 800}} message="提交成功" type="success" showIcon />
+                                                </div>
+                                            }
+                                            { SubmitStatus === 'fill write wrong'  &&
+                                                <div>  
+                                                    <Alert style={{ width: 800}} message="答案与要求不符" type="error" showIcon />
+                                                </div>
+                                            }
                                         </div>
                                     )}
                                     { examData[i]['eqType'] === '编码题' && (
