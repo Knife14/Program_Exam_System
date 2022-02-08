@@ -21,6 +21,8 @@ import Codemirror from './Codemirror';
 import { useLocation } from 'umi';
 import { stuGetExam, testProgram, testFill } from '../../../services/swagger/exam';
 
+let codeRef: any;
+
 export default () => {
     var [examData, SetData] = useState([]);
     var [ExamStatus, SetExamStatus] = useState('unknown');
@@ -38,21 +40,10 @@ export default () => {
         SetExamStatus(msg['status']);
     }, []);
 
-    // 提交编码题
-
-    let codeRef: any;
-    var submitCode = async () => {
-        const values = codeRef.getExamValue();
-    
-        // 调用接口
-        let res = await testProgram(values);
-    
-      };
-
     return (
         <div style={{ whiteSpace: 'pre-wrap'}}>
             { ExamStatus === 'success' && (
-                <Tabs tabPosition='left'>
+                <Tabs tabPosition='left' onChange={() => {SetSubmitStatus('unknown');}}>
                     {[...Array.from({ length: 10 }, (v, i) => i)].map(i => (
                         <Tabs.TabPane tab={`问题${i + 1}`} key={i}>
                             <div>
@@ -90,6 +81,24 @@ export default () => {
                                             value={examData[i]['eqID']}
                                             width='xl'
                                         />
+                                        { examData[i]['eqType'] === '填空题' && (
+                                            <ProFormTextArea
+                                                readonly
+                                                label='分值'
+                                                name='score'
+                                                value={5}
+                                                width='xl'
+                                            />
+                                        )}
+                                        { examData[i]['eqType'] === '编码题' && (
+                                            <ProFormTextArea
+                                                readonly
+                                                label='分值'
+                                                name='score'
+                                                value={15}
+                                                width='xl'
+                                            />
+                                        )}
                                     </ProForm.Group>
                                     <ProFormTextArea
                                         readonly
@@ -180,7 +189,20 @@ export default () => {
                                             <Codemirror ref={(ref) => (codeRef = ref)} />
                                             <br />
                                             <div align='center'>
-                                                <Button type='primary' style={{ textAlign: 'center' }} onClick={() => submitCode()}>提交</Button>
+                                                <Button
+                                                    type='primary'
+                                                    style={{ textAlign: 'center' }} 
+                                                    onClick={async () => {
+                                                        let values = codeRef.getExamValue();
+        
+                                                        values['examID'] = examID;
+                                                        values['tqID'] = examData[i]['eqID'];
+                                                        // 调用接口
+                                                        let res = await testProgram(values);
+                                                    }}
+                                                >
+                                                    提交
+                                                </Button>
                                             </div>
                                         </div>
                                     )}
