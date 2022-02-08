@@ -1076,6 +1076,12 @@ def stu_getExam(request):
         if StuExamEvent.objects.filter(userID=userID):
             response['status'] = 'join error'
             return HttpResponse(json.dumps(response), status=200)
+        # 注入数据库事件中
+        # StuExamEvent.objects.create(
+        #     userID=userID,
+        #     examID=examID,
+        #     eventType='join',
+        # )
 
         response['data'] = list()
 
@@ -1134,7 +1140,7 @@ def test_program(request):
     # # 得先添加一个文件夹（可以在某场考试中，也可以在创建账户的时候，后面再说吧！）
     # # 根据语言类别存放于不同的文件夹中，方便后续编译执行
     # path = os.path.abspath('.')
-    # if message['type'] == 'Python':
+    # if message['type'] == 'Python':   
     #     with open(path + '\\temp_program\\' + userID + '\\' + filename + '.py', 'w', encoding='utf-8' ) as file:
     #         file.write(message['code'])
         
@@ -1186,7 +1192,60 @@ def test_fill(request):
     assert request.method == 'POST'
     response = dict()
 
-    message = json.loads(request.body.decode('utf-8'))
-    print(message)
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
 
+    if UserInfo.objects.get(userID=userID).identify == 'student':
+        # 处理数据
+        message = json.loads(request.body.decode('utf-8'))
+        
+        examID = message['examID']
+        tqID = message['tqID']
+        fanswers = message['fanswers']
+
+        # 提取对应题目
+        tq = TestQuestions.objects.get(tqID=tqID)
+        tqAnswer = tq.answer
+        tqContent = ''.join(tq.content)  # 字符串拷贝
+        tqInputs = int(tq.inputnums)
+
+        # 遍历答案
+        # 如果答案段数不一，直接返回提交失败
+        if len(fanswers) != tqInputs:
+            response['status'] = 'fill write wrong'
+            return HttpResponse(json.dumps(response), status=200)
+        # 否则替换文本且写入cpp文件
+        filename = userID + '+' + tqID
+        for answer in fanswers:
+            tqContent = tqContent.replace('___', answer['input'], 1)  # 每个答案只替换一次
+        with open('./filling_problems/' + filename + '.cpp', 'w', encoding='utf-8') as fillFile:
+            fillFile.write(tqContent)
+        
+        # 编译cpp: g++ 编译 ./a.exe 执行 
+        compile_order = 'cd .\\filling_problems\\ && g++ -o '+ filename + ' ' + filename +'.cpp'
+        subprocess.getstatusoutput(compile_order)
+
+        run_order = '.\\filling_problems\\' + filename + '.exe'
+        run_output = subprocess.getoutput(run_order)
+        
+        # 注入数据库
+        if run_output == tqAnswer:
+            score = 5
+        else:
+            score = 0
+        StuExamSubmit.objects.create(
+            userID=userID,
+            examID=examID,
+            tqID=tqID,
+            content=fanswers,
+            score=score,
+        )
+
+        response['status'] = 'fill submit success'
+        return HttpResponse(json.dumps(response), status=200)
+
+
+    response['status'] = 'submit error'
     return HttpResponse(json.dumps(response), status=200)
