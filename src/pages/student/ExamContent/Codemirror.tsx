@@ -28,7 +28,7 @@ import 'codemirror/mode/clike/clike.js';
 const { Option } = Select;
 
 const CodeMirrorBox = forwardRef((props, ref) => {
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState('# 请使用sys.argv进行命令行截取输入，并自行输写输出\n# 请注意类型转换');
   const [setting, setSetting] = useState({
     type: 'Python',
     mode: 'text/x-python',
@@ -65,7 +65,7 @@ const CodeMirrorBox = forwardRef((props, ref) => {
   }));
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', whiteSpace: 'pre-wrap'}}>
       <div style={{ margin: '10px 0 10px 20px' }}>
         <span>选择语言</span>{' '}
         <Select defaultValue="Python" style={{ width: 120 }} onChange={handleChange}>
