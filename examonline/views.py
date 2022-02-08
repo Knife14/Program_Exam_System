@@ -1126,9 +1126,61 @@ def test_program(request):
     assert request.method == 'POST'
     response = dict()
 
-    message = json.loads(request.body.decode('utf-8'))
-    print(message)
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
 
+    if UserInfo.objects.get(userID=userID).identify == 'student':
+        # 处理数据
+        message = json.loads(request.body.decode('utf-8'))
+        
+        examID = message['examID']
+        tqID = message['tqID']
+
+        # 限制条件，如超时、内存，暂未完成
+        limits = TestQuestions.objects.get(tqID=tqID).limit
+
+        tes = list(TestExamples.objects.filter(tqID=tqID).values('cInput', 'cOutput'))
+        passednum, alltesnum = 0, len(tes)  # 通过用例数
+
+        if message['type'] == 'Python':
+            with open('./temp_program/' + userID + '+' + tqID + '.py', 'w', encoding='utf-8') as pyfile:
+                pyfile.write(message['code'])
+            
+            for te in tes:
+                run_order = 'python ./temp_program/' + userID + '+' + tqID + '.py ' + te['cInput']
+                state, run_output = subprocess.getstatusoutput(run_order)
+
+                if state == 1:
+                    # 注入数据库
+                    StuExamSubmit.objects.create(
+                        userID=userID,
+                        examID=examID,
+                        tqID=tqID,
+                        content=message['code'],
+                        score=(passednum / alltesnum) * 15,
+                    )
+
+                    response['status'] = 'program run failed'
+                    response['content'] = '通过测试用例数：' + passednum + '/' + alltesnum + '\n' + run_output
+                    return HttpResponse(json.dumps(response), status=200)
+                elif state == 0:
+                    passednum += 1
+
+        # 注入数据库
+        StuExamSubmit.objects.create(
+            userID=userID,
+            examID=examID,
+            tqID=tqID,
+            content=message['code'],
+            score=(passednum / alltesnum) * 15,
+        )
+
+        response['status'] = 'program success run'
+        return HttpResponse(json.dumps(response), status=200)
+
+    response['status'] = 'submit error'
     return HttpResponse(json.dumps(response), status=200)
 
     # userID = '20184281'  # 后续改用token，获取个人id
