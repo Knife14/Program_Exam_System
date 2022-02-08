@@ -1,12 +1,5 @@
-import random
-
-cards=[str(i) for i in range(2,11)]
-cards.extend(list("JQKA"))
-
-allcards=[]
-for s in "abcd":
-    for c in cards:
-       allcards.append(c+' '+s)
-
-random.shuffle(allcards)
-print(len(allcards), allcards)
+import re
+ 
+str1='123  456  7\t8\r9\n10'
+str1 = re.sub('[\s+]', '', str1)
+print(str1)

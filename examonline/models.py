@@ -26,7 +26,7 @@ class TestQuestions(models.Model):
     name = models.CharField(max_length=100, blank=False)  # 试题名称，非空
     tags = models.CharField(max_length=100)  # 试题标签：算法、动态规划、数据结构、BFS、DFS等，以;号间隔
     content = models.CharField(max_length=5000, blank=False)  # 试题内容，不定长，非空
-    answer = models.CharField(max_length=5000)  # 试题答案，仅填空题可能有，不定长
+    answer = models.TextField()  # 试题答案，仅填空题可能有，不定长
     inputnums = models.CharField(max_length=5000)  # 试题需要填充的代码段数，仅填空题有
     limit = models.CharField(max_length=100)  # 限制条件，一般仅为运行时间（ms）和运行内存（MB），目前只支持运行时间
     creator = models.CharField(max_length=11, blank=False)  # 试题创造者ID，非空：以确保除管理员外，只有本人才可修改本人编辑的题目?

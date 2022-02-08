@@ -1223,16 +1223,25 @@ def test_fill(request):
         with open('./filling_problems/' + filename + '.cpp', 'w', encoding='utf-8') as fillFile:
             fillFile.write(tqContent)
         
-        # 编译cpp: g++ 编译 ./a.exe 执行 
+        # 编译提交代码: g++ 编译 ./a.exe 执行 
         compile_order = 'cd .\\filling_problems\\ && g++ -o '+ filename + ' ' + filename +'.cpp'
         subprocess.getstatusoutput(compile_order)
 
         run_order = '.\\filling_problems\\' + filename + '.exe'
         run_output = subprocess.getoutput(run_order)
         
+        # 编译并运行数据库中标准答案
+        with open('./filling_problems/' + tqID + '.cpp', 'w', encoding='utf-8') as tqFile:
+            tqFile.write(tqContent)
+        tq_compile = 'cd .\\filling_problems\\ && g++ -o '+ tqID + ' ' + tqID +'.cpp'
+        subprocess.getstatusoutput(tq_compile)
+
+        tq_run = '.\\filling_problems\\' + tqID + '.exe'
+        tq_output = subprocess.getoutput(tq_run)
+
         # 注入数据库
-        if run_output == tqAnswer:
-            score = 5
+        if run_output == tq_output:
+            score = 5  # 得分
         else:
             score = 0
         StuExamSubmit.objects.create(
