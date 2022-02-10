@@ -65,7 +65,7 @@ const CodeMirrorBox = forwardRef((props, ref) => {
   }));
 
   return (
-    <div style={{ width: '100%', whiteSpace: 'pre-wrap'}}>
+    <div style={{ width: '85%', whiteSpace: 'pre-wrap'}}>
       <div style={{ margin: '10px 0 10px 20px' }}>
         <span>选择语言</span>{' '}
         <Select defaultValue="Python" style={{ width: 120 }} onChange={handleChange}>
