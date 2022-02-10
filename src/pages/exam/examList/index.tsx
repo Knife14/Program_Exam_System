@@ -28,7 +28,7 @@ export type TableListItem = {
 const columns: ProColumns<TableListItem>[] = [
   {
     title: '考试名称',
-    width: 250,
+    width: 220,
     dataIndex: 'name',
     render: (_, record) => <Link target = "_blank" to={`./changeExam?examID=${record.examID}`}>{_}</Link>,
   },
@@ -78,12 +78,13 @@ const columns: ProColumns<TableListItem>[] = [
   },
   {
     title: '操作',
-    width: 100,
+    width: 130,
     key: 'option',
     valueType: 'option',
     render: (_, record) => [
       <Link target = "_blank" to = {`./changeExam?examID=${record.examID}`}>编辑</Link>,
       <Link target = "_blank" to = {`./showExam?examID=${record.examID}`}>查阅</Link>,
+      <Link target = "_blank" to = {`./invigilation?examID=${record.examID}`}>监考</Link>,
       <Link target = "_blank" to = {`./deleteExam?examID=${record.examID}`}>删除</Link>,
     ],
     tooltip: '查阅功能为查阅当场考试成绩分析',

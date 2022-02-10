@@ -168,3 +168,16 @@ export async function testFill(body: any, options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 考试情况（成绩、异常）统计回馈 POST /examonline/getScore */
+export async function getScore(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/getScore', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
