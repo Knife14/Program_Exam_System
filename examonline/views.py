@@ -1164,7 +1164,7 @@ def test_program(request):
                     )
 
                     response['status'] = 'program run failed'
-                    response['content'] = '通过测试用例数：' + passednum + '/' + alltesnum + '\n' + run_output
+                    response['content'] = '通过测试用例数：' + str(passednum) + '/' + str(alltesnum) + '\n' + run_output
                     return HttpResponse(json.dumps(response), status=200)
                 elif state == 0:
                     passednum += 1
@@ -1225,7 +1225,8 @@ def test_fill(request):
             tqContent = tqContent.replace('___', answer['input'], 1)  # 每个答案只替换一次
         with open('./filling_problems/' + filename + '.cpp', 'w', encoding='utf-8') as fillFile:
             fillFile.write(tqContent)
-        
+        print(0)
+
         # 编译提交代码: g++ 编译 ./a.exe 执行 
         compile_order = 'cd .\\filling_problems\\ && g++ -o '+ filename + ' ' + filename +'.cpp'
         subprocess.getstatusoutput(compile_order)
@@ -1260,4 +1261,125 @@ def test_fill(request):
 
 
     response['status'] = 'submit error'
+    return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/getScore
+use: 用于获取成绩等统计情况
+http: post
+content: examID
+'''
+def get_score(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 处理数据
+    examID = request.body.decode('utf-8')
+    curr_exam = ExamInfo.objects.get(examID=examID)
+
+    # 判断开始结束时间
+    # 格式化时间转换为时间戳： str格式化时间 -> 映射tuple（year、month...） -> 时间戳
+    etime = int(time.mktime(time.strptime(str(curr_exam.endTime), '%Y-%m-%d %H:%M:%S')))
+    ntime = int(time.mktime(time.strptime(str(timezone.now())[:-7], '%Y-%m-%d %H:%M:%S')))
+
+    # 判断身份，并且当考试完全结束后，这个成绩、异常情况统计才有意义
+    if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher') and \
+            ntime >= etime:
+        response['data'] = dict()
+
+        # 检索并处理当场考试所有参与者
+        all_submits = list(StuExamSubmit.objects.filter(examID=examID).values('userID'))
+
+        all_students = set()
+        for curr_student in all_submits:
+            all_students.add(curr_student['userID'])
+
+        # 检索当场考试的有关题目以及涉及标签
+        eqlist = json.loads(''.join(ExamInfo.objects.get(examID=examID).eqlist).replace('\'', '\"'))
+        all_problems = list()
+        all_tags = set()
+        for tqID in eqlist:
+            curr_pro = list(TestQuestions.objects.filter(tqID=tqID).values('tqID', 'tags')).pop()
+            
+            for tag in json.loads(curr_pro['tags'].replace('\'', '\"')):
+                all_tags.add(tag)
+
+            all_problems.append(curr_pro)
+
+        # 参与人数与题目总数
+        s_num, p_num = len(all_students), 10
+
+        # 考试基本信息
+        response['data']['basic'] = dict()
+        response['data']['basic']['name'] = curr_exam.name
+        response['data']['basic']['stunums'] = s_num
+        response['data']['basic']['examID'] = examID
+        response['data']['basic']['startTime'] = str(curr_exam.startTime)
+        response['data']['basic']['endTime'] = str(curr_exam.endTime)
+
+        # 成绩统计
+        response['data']['PScore'] = list()  # 题目分数
+
+        # 标签分数
+        response['data']['TScore'] = list() 
+        for tag in all_tags:
+            tmp = dict()
+            tmp['type'] = tag
+            tmp['value'] = 0
+            response['data']['TScore'].append(tmp)
+
+        for index in range(p_num):
+            ptmp = dict()
+
+            curr_tqID = all_problems[index]['tqID']
+            curr_tqName = TestQuestions.objects.get(tqID=curr_tqID).name
+            curr_tags = json.loads(all_problems[index]['tags'].replace('\'', '\"'))
+            curr_pscores, curr_tscores = 0, 0
+
+            for stuID in all_students:
+                curr_score = list(StuExamSubmit.objects.filter(userID=stuID, examID=examID, tqID=curr_tqID).values('score'))
+                
+                # 找出当前题目该名同学多次提交记录中所得最高分数
+                tmax = 0
+                for s in curr_score:
+                    if s['score'] >= tmax:
+                        tmax = s['score']
+                curr_pscores += tmax
+
+            # 题目分数
+            ptmp['type'] = curr_tqName
+            ptmp['value'] = curr_pscores
+
+            response['data']['PScore'].append(ptmp)
+
+            # 标签分数
+            for tag in curr_tags:
+                for ts in response['data']['TScore']:
+                    if tag == ts['type']:
+                        ts['value'] += curr_pscores
+
+        # 异常统计
+        response['data']['Abnormal'] = list()
+        abnos = list(StuExamEvent.objects.filter(examID=examID, eventType='Abnormal').values('userID', 'event', 'addTime'))
+        for abno in abnos:
+            tmp = dict()
+
+            tmp['id'] = abno['userID']
+            tmp['name'] = UserInfo.objects.get(userID=abno['userID']).name
+            tmp['content'] = abno['event']
+            tmp['time'] = str(abno['addTime'])[:-7]
+            
+            response['data']['Abnormal'].append(tmp)
+
+        response['status'] = 'get success'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'get wrong'
     return HttpResponse(json.dumps(response), status=200)
