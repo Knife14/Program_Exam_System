@@ -44,7 +44,7 @@ def login(request):
         currentUSER = list(UserInfo.objects.filter(userID=userID).values()).pop()
         response = dict()
 
-        if currentUSER['password'] == password and not currentUSER['is_online']:
+        if currentUSER['password'] == password and not currentUSER['is_online']:  # 
             # 创建token
             currentUSER_token = create_token(userID)
 
@@ -1108,6 +1108,7 @@ def stu_getExam(request):
                     tmp['examples'].append(tmp_exa)
         
             response['data'].append(tmp)
+        response['duratime'] = curr_exam.duraTime
 
         response['status'] = 'success'
         return HttpResponse(json.dumps(response), status=200)
@@ -1182,56 +1183,6 @@ def test_program(request):
 
     response['status'] = 'submit error'
     return HttpResponse(json.dumps(response), status=200)
-
-    # userID = '20184281'  # 后续改用token，获取个人id
-    # # 后续应该用 考试ID + 题目ID + 提交次数来命名文件
-    # filename = \
-    #     str(timezone.now().year) + str(timezone.now().month).rjust(2, '0') + str(timezone.now().day).rjust(2, '0') \
-    #         + str(timezone.now().hour + 8).rjust(2, '0') + str(timezone.now().minute).rjust(2, '0') 
-
-    # # 得先添加一个文件夹（可以在某场考试中，也可以在创建账户的时候，后面再说吧！）
-    # # 根据语言类别存放于不同的文件夹中，方便后续编译执行
-    # path = os.path.abspath('.')
-    # if message['type'] == 'Python':   
-    #     with open(path + '\\temp_program\\' + userID + '\\' + filename + '.py', 'w', encoding='utf-8' ) as file:
-    #         file.write(message['code'])
-        
-    #     try:
-    #         order = 'python .\\temp_program\\' + userID + '\\' + filename + '.py'  # 如有参数，还需设置
-    #         # 命令行执行代码，并且获取输出
-    #         (status, output) = subprocess.getstatusoutput(order)  # output: string
-
-    #         if output == '3':
-    #             # 返回
-    #             response = dict()
-    #             response['status'] = 'pass'
-    #             response['content'] = '运行成功'
-
-    #             return HttpResponse(json.dumps(response), status=200)
-    #         else:
-    #             # 返回
-    #             response = dict()
-    #             response['status'] = 'no pass'
-    #             response['content'] = '输出错误'
-
-    #             return HttpResponse(json.dumps(response), status=200)
-    #     except:
-    #         # 返回
-    #         response = dict()
-    #         response['status'] = 'no pass'
-    #         response['content'] = '提交错误，请修改您的代码！'  # 更多异常信息
-
-    #         return HttpResponse(json.dumps(response), status=200)
-    # elif message['type'] == 'C':
-    #     with open(path + '\\temp_program\\' + userID + '\\' + filename + '.c', 'w', encoding='utf-8' ) as file:
-    #         file.write(message['code'])
-
-    # # 返回
-    # response = dict()
-    # response['status'] = 'pass'
-    # response['content'] = '运行成功'
-
-    # return HttpResponse(json.dumps(response), status=200)
 
 
 '''
