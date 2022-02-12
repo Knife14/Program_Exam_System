@@ -1073,15 +1073,15 @@ def stu_getExam(request):
     if curr_user.identify == 'student':
         # 已经参加过该场考试，无法再参加
         # 教师端或者管理者端可以在考试记录一栏，将某位学生的考试记录删除，即可应付异常情况导致需要再次参与考试
-        if StuExamEvent.objects.filter(userID=userID):
+        if StuExamEvent.objects.filter(userID=userID, examID=examID):
             response['status'] = 'join error'
             return HttpResponse(json.dumps(response), status=200)
         # 注入数据库事件中
-        # StuExamEvent.objects.create(
-        #     userID=userID,
-        #     examID=examID,
-        #     eventType='join',
-        # )
+        StuExamEvent.objects.create(
+            userID=userID,
+            examID=examID,
+            eventType='join',
+        )
 
         response['data'] = list()
 
@@ -1118,10 +1118,84 @@ def stu_getExam(request):
 
 
 '''
+url: /examonline/exitExam
+use: 用于结束并退出考试
+http: post
+content: examID
+'''
+def exit_exam(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 考试信息
+    examID = request.body.decode('utf-8')
+
+    # 注入数据库
+    StuExamEvent.objects.create(
+        userID=userID,
+        examID=examID,
+        eventType='end',
+    )
+
+    response['status'] = 'end'
+    return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/sendAbnormal
+use: 用于监考
+http: post
+content: examID / type / content
+'''
+def send_abnormal(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 处理数据
+    msg = json.loads(request.body.decode('utf-8'))
+    examID = msg['examID']
+    eType = msg['type']
+    event = msg['content']
+
+    try:
+        # 考试开始3s后再进行异常检测
+        ntime = int(time.mktime(time.strptime(str(timezone.now())[:-7], '%Y-%m-%d %H:%M:%S')))
+        stime = int(time.mktime(time.strptime(str(StuExamEvent.objects.get(userID=userID, examID=examID, eventType='join').addTime)[:-7], '%Y-%m-%d %H:%M:%S')))
+        is_end = False if len(list(StuExamEvent.objects.filter(userID=userID, examID=examID, eventType='end').values())) == 0 else True
+        if ntime - stime <= 3:
+            pass
+        # 防止结束考试后还会进行监控并注入数据库造成数据异常情况
+        elif ntime - stime > 3 and not is_end:
+            # 注入数据库
+            StuExamEvent.objects.create(
+                userID=userID,
+                examID=examID,
+                eventType=eType,
+                event=event, 
+            )
+
+        response['status'] = 'success'
+        return HttpResponse(json.dumps(response), status=200)
+    except:
+        response['status'] = 'wrong'
+        return HttpResponse(json.dumps(response), status=200)
+
+
+'''
 url: /examonline/testProgram
 use: 用于测试程序
 http: post
-content: code
+content: examID / tqID / code
 '''
 def test_program(request):
     assert request.method == 'POST'
@@ -1153,6 +1227,7 @@ def test_program(request):
                 run_order = 'python ./temp_program/' + userID + '+' + tqID + '.py ' + te['cInput']
                 state, run_output = subprocess.getstatusoutput(run_order)
 
+                # 程序运行错误
                 if state == 1:
                     # 注入数据库
                     StuExamSubmit.objects.create(
@@ -1166,8 +1241,23 @@ def test_program(request):
                     response['status'] = 'program run failed'
                     response['content'] = '通过测试用例数：' + str(passednum) + '/' + str(alltesnum) + '\n' + run_output
                     return HttpResponse(json.dumps(response), status=200)
+                # 程序运行正常
                 elif state == 0:
-                    passednum += 1
+                    if run_output == te['cOutput']:
+                        passednum += 1
+                    else:
+                        # 注入数据库
+                        StuExamSubmit.objects.create(
+                            userID=userID,
+                            examID=examID,
+                            tqID=tqID,
+                            content=message['code'],
+                            score=(passednum / alltesnum) * 15,
+                        )
+
+                        response['status'] = 'program run failed'
+                        response['content'] = '通过测试用例数：' + str(passednum) + '/' + str(alltesnum) + '\n' + run_output
+                        return HttpResponse(json.dumps(response), status=200)
 
         # 注入数据库
         StuExamSubmit.objects.create(
