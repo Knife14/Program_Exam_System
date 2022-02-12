@@ -96,6 +96,11 @@
     access: 'canAdmin',
     component: './exam/showExam'
   },
+  {
+    path: '/admin/invigilation',
+    access: 'canAdmin',
+    component: './exam/invigilation'
+  },
   // teacher
   {
     name: 'TeaCenter',
@@ -152,6 +157,11 @@
     path: '/teacher/showExam',
     access: 'canTeacher',
     component: './exam/showExam'
+  },
+  {
+    path: '/teacher/invigilation',
+    access: 'canTeacher',
+    component: './exam/invigilation'
   },
   // student
   {

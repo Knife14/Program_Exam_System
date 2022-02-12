@@ -19,7 +19,8 @@ import ProForm, {
   } from '@ant-design/pro-form';
 import Codemirror from './Codemirror';
 import { useLocation } from 'umi';
-import { stuGetExam, testProgram, testFill } from '../../../services/swagger/exam';
+import { stuGetExam, testProgram, testFill, exitExam, sendAbnormal } from '../../../services/swagger/exam';
+import component from '@/locales/bn-BD/component';
 
 let codeRef: any;
 
@@ -30,6 +31,7 @@ export default () => {
     var [isModalVisible, setIsModalVisible] = useState(false);
     var [SubmitStatus, SetSubmitStatus] = useState('unknown');
     var [ProgramWrong, SetWrong] = useState('unknown');
+    var [initWidth, SetWidth] = useState<Number>();
 
     const addr = useLocation();
     const examID = addr.query['examID'].toString();
@@ -39,16 +41,29 @@ export default () => {
         setIsModalVisible(true);
     };
 
-    const handleOk = () => {
+    const handleOk = async () => {
         setIsModalVisible(false);
+
         // 修改当前考试状态
-        // 并连接服务端url，确认该名考生退出考试的记录
+        let msg = await exitExam(examID);
         SetExamStatus('end');
     };
 
     const handleCancel = () => {
         setIsModalVisible(false);
     };
+
+    // 监听窗口变化
+    var curr_abnoraml_state = '窗口正常';
+    var last_abnoraml_state = '窗口正常';
+    const send_abno = async (content) => {
+        let data = {};
+        data['examID'] = examID;
+        data['type'] = 'Abnormal';
+        data['content'] = content
+
+        let msg = await sendAbnormal(data);
+    }
 
     useEffect(async () => {
         let msg = await stuGetExam(examID);
@@ -59,12 +74,39 @@ export default () => {
             // 处理倒计时
             let duratime = Date.now() + Number(msg['duratime']) * 60 * 1000;
             SetTime(duratime);
+            SetWidth(window.innerWidth);
         }
         SetExamStatus(msg['status']);
     }, []);
 
     return (
         <div style={{ whiteSpace: 'pre-wrap' }}>
+            {/* 考试过程中禁止使用鼠标右键菜单功能，以及粘贴功能 */}
+            <script>
+                { document.oncontextmenu = (evt) => {
+                    evt.preventDefault();
+                }}
+                { document.onpaste = (evt) => {
+                    return false;
+                }}
+                { window.addEventListener = async () => {
+                    if ( window.innerWidth != initWidth ) {
+                        curr_abnoraml_state = '窗口变化异常';
+                        if ( curr_abnoraml_state != last_abnoraml_state ) {
+                            last_abnoraml_state = curr_abnoraml_state;
+                            send_abno(curr_abnoraml_state);
+                        }
+                    } else if ( window.innerWidth == initWidth ) {
+                        curr_abnoraml_state = '窗口正常';
+                        if ( curr_abnoraml_state != last_abnoraml_state ) {
+                            last_abnoraml_state = curr_abnoraml_state;
+                            send_abno(curr_abnoraml_state);
+                        }
+                    }
+                }}
+                { window.removeEventListener = async () => {
+                } }
+            </script>
             { ExamStatus === 'success' && (
                 <Row gutter={20} wrap={false}>
                     <Col span={20}>
@@ -261,7 +303,9 @@ export default () => {
                     <Col span={3} style={{ marginTop: 128 }}>
                         <Statistic.Countdown title='倒计时' value={duraTime} on Finish={() => SetExamStatus('end')}/>
                         <br /><br /><br />
-                        <Button onClick={showModal}>结束考试</Button>
+                        <Button onClick={() => showModal()}>
+                            结束考试
+                        </Button>
                         <Modal title="是否要结束考试？" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
                             <p>请仔细确认你的选择！一经退出，将无法再次参与考试！</p>
                         </Modal>
@@ -287,6 +331,27 @@ export default () => {
                         description='您参加的这场考试，已经结束！预祝您取得理想的成绩！'
                     />
                 </Card>
+                </div>
+            )}
+            { ExamStatus === 'join error' && (
+                // 组件布局居中
+                <div align='center'>
+                    <br /><br /><br /><br /><br /><br />
+                    <Card
+                        style={{ width: 350 }}
+                        align='middle'
+                        cover={
+                        <img
+                            alt="example"
+                            src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
+                        />
+                        }
+                    >
+                        <Card.Meta
+                            title='参加错误'
+                            description='请检查您是否已经参加过考试，将无法参加第二次考试！如有问题，请联系教师、管理员'
+                        />
+                    </Card>
                 </div>
             )}
             { ExamStatus === 'time error' && (

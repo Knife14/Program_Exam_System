@@ -134,6 +134,10 @@ export default () => {
       }}
       search={false}
       dateFormatter="string"
+      tooltip={{
+        title: '请在考试过程中，不要试图刷新页面，否则将会按照离开考试处理',
+        color: 'red',
+      }}
     />
   );
 };

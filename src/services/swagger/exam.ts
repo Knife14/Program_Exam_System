@@ -181,3 +181,55 @@ export async function getScore(body: any, options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 结束并退出考试 POST /examonline/exitExam */
+export async function exitExam(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/exitExam', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 学生端发送异常状态 POST /examonline/sendAbnormal */
+export async function sendAbnormal(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/sendAbnormal', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 监考之提交记录 POST /examonline/getSubmits */
+export async function getSubmits(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/getSubmits', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 监考之异常记录 POST /examonline/getAbnormals */
+export async function getAbnormals(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/getAbnormals', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}

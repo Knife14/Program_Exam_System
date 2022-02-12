@@ -94,6 +94,9 @@ const CodeMirrorBox = forwardRef((props, ref) => {
           matchBrackets: true,
           autoCloseBrackets: true,
           styleActiveLine: true,
+          extraKeys:{
+            'Ctrl-V': () => {return false;},  // 禁止使用粘贴功能
+          },
         }}
         onBeforeChange={changeCode}
       />
