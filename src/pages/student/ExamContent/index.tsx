@@ -28,6 +28,7 @@ export default () => {
     var [examData, SetData] = useState([]);
     var [duraTime, SetTime] = useState<Number>();
     var [ExamStatus, SetExamStatus] = useState('unknown');
+    var [examScore, SetScore] = useState<Number>();
     var [isModalVisible, setIsModalVisible] = useState(false);
     var [SubmitStatus, SetSubmitStatus] = useState('unknown');
     var [ProgramWrong, SetWrong] = useState('unknown');
@@ -47,6 +48,7 @@ export default () => {
         // 修改当前考试状态
         let msg = await exitExam(examID);
         SetExamStatus('end');
+        SetScore(msg['score']);
     };
 
     const handleCancel = () => {
@@ -331,6 +333,7 @@ export default () => {
                         description='您参加的这场考试，已经结束！预祝您取得理想的成绩！'
                     />
                 </Card>
+                <span>您的得分是： {examScore}</span>
                 </div>
             )}
             { ExamStatus === 'join error' && (

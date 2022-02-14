@@ -246,3 +246,41 @@ export async function getAbnormals(body: any, options?: { [key: string]: any }) 
     ...(options || {}),
   });
 }
+
+/** 反馈所有考试记录 POST /examonline/getRecords */
+export async function getRecords(options?: { [key: string]: any }) {
+  return request<any>('/examonline/getRecords', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** 反馈个人考试记录 POST /examonline/getRecord */
+export async function getRecord(body: any,options?: { [key: string]: any }) {
+  return request<any>('/examonline/getRecord', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 删除个人考试记录 POST /examonline/deleteRecord */
+export async function deleteRecord(body: any,options?: { [key: string]: any }) {
+  return request<any>('/examonline/deleteRecord', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}

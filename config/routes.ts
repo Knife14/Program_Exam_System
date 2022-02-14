@@ -101,6 +101,18 @@
     access: 'canAdmin',
     component: './exam/invigilation'
   },
+  {
+    name: 'ExamRecords',
+    icon: 'minus',
+    path: '/admin/examRecords',
+    access: 'canAdmin',
+    component: './exam/examRecords'
+  },
+  {
+    path: '/admin/examRecord',
+    access: 'canAdmin',
+    component: './exam/examRecord'
+  },
   // teacher
   {
     name: 'TeaCenter',
@@ -162,6 +174,18 @@
     path: '/teacher/invigilation',
     access: 'canTeacher',
     component: './exam/invigilation'
+  },
+  {
+    name: 'ExamRecords',
+    icon: 'minus',
+    path: '/teacher/examRecords',
+    access: 'canTeacher',
+    component: './exam/examRecords'
+  },
+  {
+    path: '/teacher/examRecord',
+    access: 'canTeacher',
+    component: './exam/examRecord'
   },
   // student
   {
