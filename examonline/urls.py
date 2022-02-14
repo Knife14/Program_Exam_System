@@ -33,4 +33,7 @@ urlpatterns = [
     path('Invigilation', views.invigilation, name='Invigilation'),
     path('getSubmits', views.get_submits, name='getSubmits'),
     path('getAbnormals', views.get_abnormals, name='getAbnormals'),
+    path('getRecords', views.get_records, name='getRecords'),
+    path('getRecord', views.get_record, name='getRecord'),
+    path('deleteRecord', views.delete_record, name='deleteRecord'),
 ]

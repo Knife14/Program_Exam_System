@@ -1135,6 +1135,22 @@ def exit_exam(request):
     # 考试信息
     examID = request.body.decode('utf-8')
 
+    # 总分统计
+    response['score'] = 0
+
+    eqlist = json.loads(''.join(ExamInfo.objects.get(examID=examID).eqlist).replace('\'', '\"'))  # 本场考试涉及所有考题
+    for tqID in eqlist:
+        try:
+            all_submits = list(StuExamSubmit.objects.filter(examID=examID, userID=userID, tqID=tqID).values('score'))
+
+            smax = 0
+            for submit in all_submits:
+                smax = submit['score'] if submit['score'] > smax else smax
+
+            response['score'] += smax
+        except:
+            pass
+
     # 注入数据库
     StuExamEvent.objects.create(
         userID=userID,
@@ -1503,7 +1519,7 @@ def invigilation(request):
     # 判断身份
     if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
         UserInfo.objects.get(userID=userID).identify == 'teacher') and \
-            ntime >= stime and ntime <= etime:
+            ntime >= stime:
         response['status'] = 'get success'
         return HttpResponse(json.dumps(response), status=200)
     
@@ -1592,5 +1608,143 @@ def get_abnormals(request):
         response['status'] = 'get success'
         return HttpResponse(json.dumps(response), status=200)
     
+    response['status'] = 'get wrong'
+    return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/getRecords
+use: 用于获取所有参考记录
+http: get
+'''
+def get_records(request):
+    assert request.method == 'GET'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher'):
+        response['data'] = list()
+
+        all_events = list(StuExamEvent.objects.filter().distinct().values('userID', 'examID'))
+        
+        for event in all_events:
+            tmp = dict()
+
+            tmp['userID'] = event['userID']
+            tmp['name'] = UserInfo.objects.get(userID=event['userID']).name
+            tmp['examID'] = event['examID']
+            tmp['examName'] = ExamInfo.objects.get(examID=event['examID']).name
+
+            response['data'].append(tmp)
+
+        response['status'] = 'get success'
+        return HttpResponse(json.dumps(response), status=200)
+
+    response['status'] = 'get wrong'
+    return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/getRecord
+use: 用于获取个人参考记录
+http: post
+content: examID / stuID
+'''
+def get_record(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher'):
+        response['data'] = list()
+
+        # 处理数据
+        msg = json.loads(request.body.decode('utf-8'))
+        examID = msg['examID']
+        stuID = msg['userID']  # 学生id
+        
+        all_events = list(StuExamEvent.objects.filter(examID=examID, userID=stuID).values())
+        all_submits = list(StuExamSubmit.objects.filter(examID=examID, userID=stuID).values())
+
+        for event in all_events:
+            tmp = dict()
+
+            tmp['userID'] = stuID
+            tmp['name'] = UserInfo.objects.get(userID=stuID).name
+            tmp['examID'] = examID
+            tmp['ename'] = ExamInfo.objects.get(examID=examID).name
+            if event['eventType'] == 'Abnormal':
+                tmp['eventType'] = '异常'
+            elif event['eventType'] == 'join':
+                tmp['eventType'] = '参加'
+            elif event['eventType'] == 'end':
+                tmp['eventType'] = '退出'
+            tmp['event'] = event['event']
+            tmp['time'] = str(event['addTime'])[:-7]
+
+            response['data'].append(tmp)
+        
+        for submit in all_submits:
+            tmp = dict()
+
+            tmp['userID'] = stuID
+            tmp['name'] = UserInfo.objects.get(userID=stuID).name
+            tmp['examID'] = examID
+            tmp['ename'] = ExamInfo.objects.get(examID=examID).name
+            tmp['eventType'] = '提交'
+            tmp['tname'] = TestQuestions.objects.get(tqID=submit['tqID']).name
+            tmp['content'] = submit['content']
+            tmp['time'] = str(event['addTime'])[:-7]
+
+            response['data'].append(tmp)
+
+        response['status'] = 'get success'
+        return HttpResponse(json.dumps(response), status=200)
+
+    response['status'] = 'get wrong'
+    return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/deleteRecord
+use: 用于删除个人参考记录
+http: post
+content: examID / stuID
+'''
+def delete_record(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher'):
+        response['data'] = list()
+
+        # 处理数据
+        msg = json.loads(request.body.decode('utf-8'))
+        examID = msg['examID']
+        stuID = msg['userID']  # 学生id
+
+        # 删除数据库
+        StuExamEvent.objects.filter(examID=examID, userID=stuID).delete()
+        StuExamSubmit.objects.filter(examID=examID, userID=stuID).delete()
+
+        response['status'] = 'get success'
+        return HttpResponse(json.dumps(response), status=200)
+
     response['status'] = 'get wrong'
     return HttpResponse(json.dumps(response), status=200)

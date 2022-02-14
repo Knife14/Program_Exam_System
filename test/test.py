@@ -1,4 +1,2 @@
-from django.utils import timezone
-
-
-print(timezone.now())
+a = ['1', '15', '2', '20']
+print(max(a))
