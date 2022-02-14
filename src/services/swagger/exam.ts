@@ -208,6 +208,19 @@ export async function sendAbnormal(body: any, options?: { [key: string]: any }) 
   });
 }
 
+/** 监考 POST /examonline/Invigilation */
+export async function Invigilation(body: any, options?: { [key: string]: any }) {
+  return request<any>('/examonline/Invigilation', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 监考之提交记录 POST /examonline/getSubmits */
 export async function getSubmits(body: any, options?: { [key: string]: any }) {
   return request<any>('/examonline/getSubmits', {
