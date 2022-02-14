@@ -1473,3 +1473,124 @@ def get_score(request):
     
     response['status'] = 'get wrong'
     return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/Invigilation
+use: 用于监考
+http: post
+content: examID
+'''
+def invigilation(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 处理数据
+    examID = request.body.decode('utf-8')
+    curr_exam = ExamInfo.objects.get(examID=examID)
+    
+    # 判断开始结束时间
+    # 格式化时间转换为时间戳： str格式化时间 -> 映射tuple（year、month...） -> 时间戳
+    stime = int(time.mktime(time.strptime(str(curr_exam.startTime), '%Y-%m-%d %H:%M:%S')))
+    etime = int(time.mktime(time.strptime(str(curr_exam.endTime), '%Y-%m-%d %H:%M:%S')))
+    ntime = int(time.mktime(time.strptime(str(timezone.now())[:-7], '%Y-%m-%d %H:%M:%S')))
+
+    # 判断身份
+    if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher') and \
+            ntime >= stime and ntime <= etime:
+        response['status'] = 'get success'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'get wrong'
+    return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/getSubmits
+use: 用于监考中获取题目提交情况
+http: post
+content: examID
+'''
+def get_submits(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 处理数据
+    examID = request.body.decode('utf-8')
+
+    # 判断身份
+    if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher'):
+        all_submits = list(StuExamSubmit.objects.filter(examID=examID).values())
+
+        response['data'] = list()
+        for submit in all_submits:
+            tmp = dict()
+
+            tmp['userID'] = submit['userID']
+            tmp['name'] = UserInfo.objects.get(userID=submit['userID']).name
+            tmp['tqID'] = submit['tqID']
+            tmp['tqName'] = TestQuestions.objects.get(tqID=submit['tqID']).name
+            tmp['content'] = submit['content']
+            tmp['score'] = submit['score']
+            tmp['time'] = str(submit['addTime'])[:-7]
+
+            response['data'].append(tmp)
+
+        response['status'] = 'get success'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'get wrong'
+    return HttpResponse(json.dumps(response), status=200)
+
+'''
+url: /examonline/getAbnormals
+use: 用于监考中获取异常情况
+http: post
+content: examID
+'''
+def get_abnormals(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 处理数据
+    examID = request.body.decode('utf-8')
+
+    # 判断身份
+    if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher'):
+        response['data'] = list()
+
+        all_abnormals = list(StuExamEvent.objects.filter(examID=examID, eventType='Abnormal').values())
+
+        for abnoraml in all_abnormals:
+            tmp = dict()
+
+            tmp['userID'] = abnoraml['userID']
+            tmp['name'] = UserInfo.objects.get(userID=abnoraml['userID']).name
+            tmp['event'] = abnoraml['event']
+            tmp['time'] = str(abnoraml['addTime'])[:-7]
+
+            response['data'].append(tmp)
+
+        response['status'] = 'get success'
+        return HttpResponse(json.dumps(response), status=200)
+    
+    response['status'] = 'get wrong'
+    return HttpResponse(json.dumps(response), status=200)
