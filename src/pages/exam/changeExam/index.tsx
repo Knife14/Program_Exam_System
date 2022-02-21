@@ -84,7 +84,7 @@ export default () => {
                             } else if (msg.status === 'change eqlist error') {
                                 alert('修改试题列表失败！');
                             } else {
-                                alert('修改失败！');
+                                alert('修改失败！请检查用户身份或者当前时间，如有更多问题请联系开发者！');
                             }
                         }}
                     >

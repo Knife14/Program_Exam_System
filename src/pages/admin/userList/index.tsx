@@ -109,22 +109,19 @@ const tableListDataSource: TableListItem[] = [];
 export default () => {
   const actionRef = useRef<ActionType>();
 
-  useEffect(async () => {
-    tableListDataSource.splice(0, tableListDataSource.length);
-
-    let msg = await getUsers();
-
-    for (let user of msg['data']){
-        tableListDataSource.push(user);
-    }
-  }, []);
-
   return (
     <ProTable<TableListItem>
       columns={columns}
       actionRef={actionRef}
-      request={(params, sorter, filter) => {
+      request={ async (params, sorter, filter) => {
         // 表单搜索项会从 params 传入，传递给后端接口。
+        tableListDataSource.splice(0, tableListDataSource.length);
+
+        let msg = await getUsers();
+    
+        for (let user of msg['data']){
+            tableListDataSource.push(user);
+        }
         return Promise.resolve({
           data: tableListDataSource,
           success: true,

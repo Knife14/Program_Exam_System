@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Tooltip, Modal } from 'antd';
+import { Button, Tooltip, Modal, Descriptions } from 'antd';
 import { Link } from 'umi';
 import type { ProColumns } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -83,6 +83,7 @@ const tableListDataSource: TableListItem[] = [];
 
 export default () => {
   var [isModalVisible, setIsModalVisible] = useState(false);
+  var [basicData, SetBasicData] = useState({});
 
   const location = useLocation();
   const examID = location.query['examID'].toString();
@@ -106,19 +107,44 @@ export default () => {
       setIsModalVisible(false);
   };
 
+  useEffect(async () => {
+    tableListDataSource.splice(0, tableListDataSource.length);
+
+    let send = {'userID': userID, 'examID': examID};
+    let msg = await getRecord(send);
+
+    SetBasicData(msg['basic']);
+    for (let data of msg['data']) {
+      tableListDataSource.push(data);
+    }
+  }, []);
+
+
   return (
         <div style={{ whiteSpace: 'pre-wrap'}}>
+            <Descriptions 
+                title='基础信息' 
+                bordered={true}
+                contentStyle={{
+                    backgroundColor: 'white'
+                }} 
+            >
+                <Descriptions.Item label='用户姓名'>{basicData['name']}</Descriptions.Item>
+                <Descriptions.Item label='用户编号'>{basicData['userID']}</Descriptions.Item>
+                <Descriptions.Item label='考试名称'>{basicData['ename']}</Descriptions.Item>
+                <Descriptions.Item label='考试编号'>{basicData['examID']}</Descriptions.Item>
+                <Descriptions.Item label='用户成绩'>{basicData['score']}</Descriptions.Item>
+            </Descriptions>
+            <br />
             <ProTable<TableListItem>
             columns={columns}
             request={ async (params, sorter, filter) => {
                 // 表单搜索项会从 params 传入，传递给后端接口。
                 // console.log(params, sorter, filter);
-                let send = {'userID': userID, 'examID': examID};
-                let msg = await getRecord(send);
 
                 return Promise.resolve({
-                data: msg['data'],
-                success: true,
+                  data: tableListDataSource,
+                  success: true,
                 });
             }}
             rowKey="key"

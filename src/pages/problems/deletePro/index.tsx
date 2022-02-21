@@ -123,6 +123,13 @@ export default () => {
                 <ProFormTextArea
                     readonly
                     width="xl"
+                    name="difficulty"
+                    label="难度"
+                    value={proData['difficulty']}
+                />
+                <ProFormTextArea
+                    readonly
+                    width="xl"
                     name="content"
                     label="内容"
                     tooltip="输入框右下角可以自由拉伸；若是代码段，考生所需填代码以 ___; 表示（3条下划线）"

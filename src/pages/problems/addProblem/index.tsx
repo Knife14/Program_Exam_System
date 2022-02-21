@@ -81,6 +81,18 @@ export default () => {
               label="标签"
               valueEnum={tags_dict}
             />
+            <ProFormSelect
+              width="xl"
+              mode="single"
+              name="difficulty"
+              label="难度"
+              valueEnum={{
+                '简单': '简单',
+                '困难': '困难',
+                '中等': '中等',
+              }}
+              rules={[{ required: true, message: '请输入题目内容！' }]}
+            />
             <ProFormTextArea
                 width="xl"
                 name="content"
@@ -124,6 +136,18 @@ export default () => {
               name="tags"
               label="标签"
               valueEnum={tags_dict}
+            />
+            <ProFormSelect
+              width="xl"
+              mode="single"
+              name="difficulty"
+              label="难度"
+              valueEnum={{
+                '简单': '简单',
+                '困难': '困难',
+                '中等': '中等',
+              }}
+              rules={[{ required: true, message: '请输入题目内容！' }]}
             />
             <ProFormTextArea
                 width="xl"

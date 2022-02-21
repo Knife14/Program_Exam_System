@@ -15,6 +15,7 @@ export type TableListItem = {
     type: string;
     creator: string;
     creatorname: string;
+    difficulty: string;
   };
 
 
@@ -22,7 +23,7 @@ export type TableListItem = {
 const columns: ProColumns<TableListItem>[] = [
   {
     title: '编号',
-    width: 20,
+    width: 15,
     dataIndex: 'proid'
   },
   {
@@ -42,13 +43,24 @@ const columns: ProColumns<TableListItem>[] = [
   },
   {
     title: '类型',
-    width: 30,
+    width: 50,
     dataIndex: 'type',
     filters: [
       { text: '填空题', value: '填空题' },
       { text: '编码题', value: '编码题' },
     ],
     onFilter: (value, record) => record.type == value,
+  },
+  {
+    title: '难度',
+    width: 50,
+    dataIndex: 'difficulty',
+    filters: [
+      { text: '简单', value: '简单' },
+      { text: '中等', value: '中等' },
+      { text: '困难', value: '困难' },
+    ],
+    onFilter: (value, record) => record.difficulty == value,
   },
   {
     title: '标签',
@@ -94,30 +106,28 @@ const tableListDataSource: TableListItem[] = [];
 export default () => {
   const actionRef = useRef<ActionType>();
 
-  useEffect(async () => {
-    tableListDataSource.splice(0, tableListDataSource.length);
-    
-    let msg = await getProblems();
-
-    for (let pro of msg['data']){
-      // 去除空格
-      const reg = /\s+/g;
-      var tags = pro['tags'].replace(reg,'');
-
-      // string -> list 中文字符串无法使用json进行快速转换
-      tags = tags.slice(1, tags.length - 1).split(",");
-
-      pro['tags'] = tags;
-      tableListDataSource.push(pro);
-    }
-  }, []);
-
   return (
     <ProTable<TableListItem>
       columns={columns}
       actionRef={actionRef}
-      request={(params, sorter, filter) => {
+      request={ async (params, sorter, filter) => {
         // 表单搜索项会从 params 传入，传递给后端接口。
+        tableListDataSource.splice(0, tableListDataSource.length);
+
+        let msg = await getProblems();
+
+        for (let pro of msg['data']){
+          // 去除空格
+          const reg = /\s+/g;
+          var tags = pro['tags'].replace(reg,'');
+    
+          // string -> list 中文字符串无法使用json进行快速转换
+          tags = tags.slice(1, tags.length - 1).split(",");
+    
+          pro['tags'] = tags;
+          tableListDataSource.push(pro);
+        }
+
         return Promise.resolve({
           data: tableListDataSource,
           success: true,

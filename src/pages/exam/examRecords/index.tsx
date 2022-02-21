@@ -59,24 +59,15 @@ const tableListDataSource: TableListItem[] = [];
 
 export default () => {
 
-  useEffect(async () => {
-    tableListDataSource.splice(0, tableListDataSource.length);
-    
-    let msg = await getRecords();
-
-    for (let data of msg['data']) {
-        tableListDataSource.push(data);
-    }
-  }, []);
-
   return (
     <ProTable<TableListItem>
       columns={columns}
-      request={(params, sorter, filter) => {
+      request={ async (params, sorter, filter) => {
         // 表单搜索项会从 params 传入，传递给后端接口。
-        console.log(params, sorter, filter);
+        let msg = await getRecords();
+
         return Promise.resolve({
-          data: tableListDataSource,
+          data: msg['data'],
           success: true,
         });
       }}

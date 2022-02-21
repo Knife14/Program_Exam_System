@@ -96,37 +96,58 @@ const tableListDataSource: TableListItem[] = [];
 
 export default () => {
 
-  useEffect(async () => {
-    tableListDataSource.splice(0, tableListDataSource.length);
+  // useEffect(async () => {
+  //   tableListDataSource.splice(0, tableListDataSource.length);
     
-    let msg = await getExams();
+  //   let msg = await getExams();
 
-    for (let test of msg['data']) {
-      // 判断当前状态
-      var stime = new Date(test['startTime']);
-      var etime = new Date(test['endTime']);
-      var currtime = new Date();
+  //   for (let test of msg['data']) {
+  //     // 判断当前状态
+  //     var stime = new Date(test['startTime']);
+  //     var etime = new Date(test['endTime']);
+  //     var currtime = new Date();
 
-      var status: any;
-      if (currtime.getTime() < stime.getTime()) {
-        status = 'close';
-      } else if (currtime.getTime() > etime.getTime()) {
-        status = 'past';
-      } else {
-        status = 'running';
-      }
-      test['status'] = status;
+  //     var status: any;
+  //     if (currtime.getTime() < stime.getTime()) {
+  //       status = 'close';
+  //     } else if (currtime.getTime() > etime.getTime()) {
+  //       status = 'past';
+  //     } else {
+  //       status = 'running';
+  //     }
+  //     test['status'] = status;
 
-      tableListDataSource.push(test);
-    }
-  }, []);
+  //     tableListDataSource.push(test);
+  //   }
+  // }, []);
 
   return (
     <ProTable<TableListItem>
       columns={columns}
-      request={(params, sorter, filter) => {
+      request={ async (params, sorter, filter) => {
         // 表单搜索项会从 params 传入，传递给后端接口。
-        console.log(params, sorter, filter);
+        tableListDataSource.splice(0, tableListDataSource.length);
+    
+        let msg = await getExams();
+    
+        for (let test of msg['data']) {
+          // 判断当前状态
+          var stime = new Date(test['startTime']);
+          var etime = new Date(test['endTime']);
+          var currtime = new Date();
+    
+          var status: any;
+          if (currtime.getTime() < stime.getTime()) {
+            status = 'close';
+          } else if (currtime.getTime() > etime.getTime()) {
+            status = 'past';
+          } else {
+            status = 'running';
+          }
+          test['status'] = status;
+    
+          tableListDataSource.push(test);
+        }
         return Promise.resolve({
           data: tableListDataSource,
           success: true,
