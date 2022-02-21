@@ -33,6 +33,8 @@ class TestQuestions(models.Model):
     aqtimes = models.IntegerField(default=0)  # 出题次数，默认为0
     addtime = models.DateTimeField(auto_now_add=True)  # 记录第一次入库的时间
     changetime = models.DateTimeField(auto_now=True)  # 修改记录的时间
+    is_audited = models.IntegerField(default=0)  # 是否已经审核，用于区分学生提交的新试题： 0 - 待审核， 1 - 已通过， 2 - 未通过
+    difficulty = models.CharField(max_length=10)  # 试题难度
 
 # 示例表： 一个试题可以有多个不同的示例，一条示例即为一项纪录
 class AnswerExamples(models.Model):

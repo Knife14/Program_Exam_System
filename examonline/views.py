@@ -463,6 +463,7 @@ def get_problems(request):
             tmp['tags'] = problem['tags']
             tmp['type'] = problem['tqType']
             tmp['creator'] = problem['creator']
+            tmp['difficulty'] = problem['difficulty']
 
             creatorID = problem['creator']
             tmp['creatorname'] = UserInfo.objects.get(userID=creatorID).name
@@ -511,6 +512,7 @@ def add_problem(request):
                 tags.append(tag)
 
             content = problem_json['content']
+            difficulty = problem_json['difficulty']
             
             if tqType == '填空题':
                 # 多个答案将会以列表形式存储，只要匹配上一个，即为对
@@ -527,6 +529,8 @@ def add_problem(request):
                     answer=answer,
                     creator=creator,
                     inputnums=inputnum,
+                    difficulty=difficulty,
+                    is_audited=1,
                 )
             elif tqType == '编码题':
                 limit = problem_json['limits']
@@ -538,6 +542,8 @@ def add_problem(request):
                     content=content,
                     limit=limit,
                     creator=creator,
+                    difficulty=difficulty,
+                    is_audited=1,
                 )
 
                 # 示例处理
@@ -595,6 +601,7 @@ def get_thePro(request):
         response['data']['content'] = problem_data.content
         response['data']['answers'] = problem_data.answer
         response['data']['limit'] = problem_data.limit
+        response['data']['difficulty'] = problem_data.difficulty
 
         if problem_data.tqType == '填空题':
             response['data']['inputnum'] = problem_data.inputnums
@@ -689,6 +696,8 @@ def change_pro(request):
                     nc_problem.update(content=pro_v, changetime=timezone.now())
                 elif pro_k == 'inputnum':
                     nc_problem.update(inputnums=pro_v, changetime=timezone.now())
+                elif pro_k == 'difficulty':
+                    nc_problem.update(difficulty=pro_v, changetime=timezone.now())
 
             response['status'] = 'ok'
             return HttpResponse(json.dumps(response), status=200)
@@ -810,7 +819,7 @@ def add_exam(request):
         total, f_total, p_total = 10, 5, 5 # 限制十道题，且填空五道，编码五道
         if msg['type'] == '综合组卷':
             while total > 0:
-                pros = list(TestQuestions.objects.filter().values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
+                pros = list(TestQuestions.objects.filter(is_audited=1).values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
                 leng = len(pros)
 
                 tmp = random.randint(0, leng - 1)
@@ -831,7 +840,7 @@ def add_exam(request):
                 if total - nums >= 0:
                     # 检索题库里相关标签的试题
                     # 字符串匹配 == %content%
-                    pros = list(TestQuestions.objects.filter(tags__contains=tn['tags']).values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
+                    pros = list(TestQuestions.objects.filter(tags__contains=tn['tags'], is_audited=1).values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
                     
                     # 后期引入组卷算法，需要考虑试题当前次数等权重影响
                     leng = len(pros)
@@ -869,7 +878,7 @@ def add_exam(request):
             
             # 遍历完要求类型题目后，仍不够十题，将会在题库中任意选取足够题目
             while total > 0:
-                pros = list(TestQuestions.objects.filter().values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
+                pros = list(TestQuestions.objects.filter(is_audited=1).values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
                 leng = len(pros)
 
                 tmp = random.randint(0, leng - 1)
@@ -896,8 +905,9 @@ def add_exam(request):
             creator=creator,
         )
         for tqID in tqlist:
-            curr_question = TestQuestions.objects.get(tqID=tqID)
-            curr_question.aqtimes += 1
+            cnt = TestQuestions.objects.get(tqID=tqID).aqtimes + 1
+            curr_question = TestQuestions.objects.filter(tqID=tqID)
+            curr_question.update(aqtimes=cnt)
 
         response['status'] = 'ok'
         return HttpResponse(json.dumps(response), status=200)
@@ -970,12 +980,22 @@ def change_exam(request):
     # token_status = check_token(request_token)  # 解密并检验token
     userID = get_username(request_token)
 
+    # 处理数据
+    msg = json.loads(request.body.decode('utf-8'))
+    examID = msg['examID']
+    curr_exam = ExamInfo.objects.get(examID=examID)
+
+    # 判断开始结束时间
+    # 格式化时间转换为时间戳： str格式化时间 -> 映射tuple（year、month...） -> 时间戳
+    stime = int(time.mktime(time.strptime(str(curr_exam.startTime), '%Y-%m-%d %H:%M:%S')))
+    etime = int(time.mktime(time.strptime(str(curr_exam.endTime), '%Y-%m-%d %H:%M:%S')))
+    ntime = int(time.mktime(time.strptime(str(timezone.now())[:-7], '%Y-%m-%d %H:%M:%S')))
+
     try:
-        if UserInfo.objects.get(userID=userID).identify == 'admin' or \
-            UserInfo.objects.get(userID=userID).identify == 'teacher':
-            msg = json.loads(request.body.decode('utf-8'))
-            
-            examID = msg['examID']
+        if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+            UserInfo.objects.get(userID=userID).identify == 'teacher') and \
+                ntime < stime:
+
             for ex_k, ex_v in msg.items():
                 if ex_k == 'examID':
                     pass
@@ -998,13 +1018,22 @@ def change_exam(request):
                                 if tqID == eqid['nc_eq'] and eqid['wc_eq'] not in eqlist:
                                     eqlist.remove(tqID)
                                     eqlist.append(eqid['wc_eq'])
+                                    
+                                    # 数据库更改
+                                    cnt_nc = TestQuestions.objects.get(tqID=tqID).aqtimes - 1
+                                    TestQuestions.objects.filter(tqID=tqID).update(aqtimes=cnt_nc)
+
+                                    cnt_wc = TestQuestions.objects.get(tqID=eqid['wc_eq']).aqtimes + 1
+                                    TestQuestions.objects.filter(tqID=eqid['wc_eq']).update(aqtimes=cnt_wc)
                                 else:
                                     response['status'] = 'change eqlist error'
                                     return HttpResponse(json.dumps(response), status=200)
                         ExamInfo.objects.filter(examID=examID).update(eqlist=eqlist, changetime=datetime.now())
 
-
             response['status'] = 'ok'
+            return HttpResponse(json.dumps(response), status=200)
+        else:
+            response['status'] = 'wrong'
             return HttpResponse(json.dumps(response), status=200)
     except:
         response['status'] = 'error'
@@ -1667,12 +1696,35 @@ def get_record(request):
     if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
         UserInfo.objects.get(userID=userID).identify == 'teacher'):
         response['data'] = list()
+        response['basic'] = dict()
 
         # 处理数据
         msg = json.loads(request.body.decode('utf-8'))
         examID = msg['examID']
         stuID = msg['userID']  # 学生id
         
+        # 考试基础信息
+        response['basic']['ename'] = ExamInfo.objects.get(examID=examID).name
+        response['basic']['name'] = UserInfo.objects.get(userID=stuID).name
+        response['basic']['userID'] = stuID
+        response['basic']['examID'] = examID
+
+        score = 0
+        eqlist = json.loads(''.join(ExamInfo.objects.get(examID=examID).eqlist).replace('\'', '\"'))  # 本场考试涉及所有考题
+        for tqID in eqlist:
+            try:
+                all_submits = list(StuExamSubmit.objects.filter(examID=examID, userID=stuID, tqID=tqID).values('score'))
+
+                smax = 0
+                for submit in all_submits:
+                    smax = submit['score'] if submit['score'] > smax else smax
+
+                score += smax
+            except:
+                pass
+        response['basic']['score'] = score
+
+        # 考试提交、异常记录
         all_events = list(StuExamEvent.objects.filter(examID=examID, userID=stuID).values())
         all_submits = list(StuExamSubmit.objects.filter(examID=examID, userID=stuID).values())
 
