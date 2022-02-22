@@ -284,3 +284,28 @@ export async function deleteRecord(body: any,options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 获取自己创建的所有试题 GET /examonline/stuGetPros */
+export async function stuGetPros(options?: { [key: string]: any }) {
+  return request<any>('/examonline/stuGetPros', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** 添加试题 PUT /examonline/stuAddPro */
+export async function stuAddPro(body: any, options?: { [key: string]: any }) {
+  return request<API.NothingResponse>('/examonline/stuAddPro', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'PUT',
+    data: body,
+    ...(options || {}),
+  });
+}

@@ -208,6 +208,23 @@
     component: './student/ExamContent',
     menuRender: false,
   },
+  {
+    name: 'StuSubmitList',
+    path: '/student/SubmitList',
+    icon: 'plus',
+    access: 'canStudent',
+    component: './student/SumbitList',
+  },
+  {
+    path: '/student/stuAddPro',
+    access: 'canStudent',
+    component: './student/stuAddPro',
+  },
+  {
+    path: '/student/stuGetPro',
+    access: 'canStudent',
+    component: './student/stuGetPro',
+  },
   // all
   {
     path: '/',

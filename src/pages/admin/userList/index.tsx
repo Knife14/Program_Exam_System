@@ -5,18 +5,6 @@ import { ActionType, ProColumns } from '@ant-design/pro-table';
 import ProTable, { TableDropdown } from '@ant-design/pro-table';
 import { getUsers, deleteUser } from '../../../services/ant-design-pro/api';
 
-// 删除用户
-const letDelete = async (userid) =>{
-  console.log(userid);
-  // let msg = await deleteUser(userid);
-
-  // if (msg.status === 'ok') {
-  //   alert('编辑成功！');
-  // } else {
-  //   alert('编辑失败！');
-  // }
-};
-
 // 表格列配置
 export type TableListItem = {
     name: string;

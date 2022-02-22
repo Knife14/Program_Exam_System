@@ -57,4 +57,5 @@ export default {
   'menu.TeaCenter': '个人信息',
   'menu.UserList': '用户列表',
   'menu.ExamRecords': '考试记录',
+  'menu.StuSubmitList': '好题提交',
 };
