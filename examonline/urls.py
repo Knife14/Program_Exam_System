@@ -36,4 +36,6 @@ urlpatterns = [
     path('getRecords', views.get_records, name='getRecords'),
     path('getRecord', views.get_record, name='getRecord'),
     path('deleteRecord', views.delete_record, name='deleteRecord'),
+    path('stuGetPros', views.stu_getPros, name='stuGetPros'),
+    path('stuAddPro', views.stu_addPro, name='stuAddPro'),
 ]

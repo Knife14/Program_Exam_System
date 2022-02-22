@@ -451,7 +451,7 @@ def get_problems(request):
 
     if UserInfo.objects.get(userID=userID).identify == 'admin' or \
         UserInfo.objects.get(userID=userID).identify == 'teacher':
-        all_problems = list(TestQuestions.objects.filter().values())
+        all_problems = list(TestQuestions.objects.filter(is_audited=1).values())
 
         # 数据库日期类型不可被json转换
         response['data'] = list()
@@ -588,8 +588,7 @@ def get_thePro(request):
     # token_status = check_token(request_token)  # 解密并检验token
     userID = get_username(request_token)
 
-    if UserInfo.objects.get(userID=userID).identify == 'admin' or \
-        UserInfo.objects.get(userID=userID).identify == 'teacher':
+    if UserInfo.objects.get(userID=userID):
         proID = request.body.decode('utf-8')
         problem_data = TestQuestions.objects.get(tqID=proID)
 
@@ -1800,3 +1799,117 @@ def delete_record(request):
 
     response['status'] = 'get wrong'
     return HttpResponse(json.dumps(response), status=200)
+
+
+'''
+url: /examonline/stuGetPros
+use: 用于学生获取自己提交的所有题目
+http: get
+content: userid
+'''
+def stu_getPros(request):
+    assert request.method == 'GET'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if UserInfo.objects.get(userID=userID).identify == 'student':
+        response['data'] = list()
+
+        all_problems = list(TestQuestions.objects.filter(creator=userID).values())
+        # 数据库日期类型不可被json转换
+        for problem in all_problems:
+            tmp = dict()
+
+            tmp['tqID'] = problem['tqID']
+            tmp['name'] = problem['name']
+            tmp['tags'] = problem['tags']
+            tmp['difficulty'] = problem['difficulty']
+            tmp['state'] = problem['is_audited']
+            tmp['limits'] = problem['limit']
+
+            response['data'].append(tmp)
+
+        return HttpResponse(json.dumps(response), status=200)
+
+    return HttpResponse(status=500)
+
+
+'''
+url: /examonline/stuAddPro
+use: 用于学生提交题目
+http: put
+content: prodata
+'''
+def stu_addPro(request):
+    assert request.method == 'PUT'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    if UserInfo.objects.get(userID=userID).identify == 'student':
+        # 处理数据
+        problem_json = json.loads(request.body.decode('utf-8'))
+
+        tqType = '编码题'
+        tqID = \
+            str(timezone.now().year) + str(timezone.now().month).rjust(2, '0') + str(timezone.now().day).rjust(2, '0') \
+                + str(timezone.now().hour + 8).rjust(2, '0') + str(timezone.now().minute).rjust(2, '0') \
+                    + str(random.randint(0, 100)).rjust(2, '0') \
+                        + '2'
+        creator = userID  # 试题创建者ID
+        name = problem_json['name']
+        
+        tags = list()
+        for tag in problem_json['tags']:
+            tags.append(tag)
+
+        content = problem_json['content']
+        difficulty = problem_json['difficulty']
+
+        limit = problem_json['limits']
+        TestQuestions.objects.create(
+            tqID=tqID,
+            tqType=tqType,
+            name=name,
+            tags=tags,
+            content=content,
+            limit=limit,
+            creator=creator,
+            difficulty=difficulty,
+            is_audited=0,
+        )
+
+        # 示例处理
+        # 前端将所有输入、输出示例的分别存放在两个数组中
+        # 一个输入、输出示例即为对应数组的一个元素
+        for example in problem_json['examples']:      
+            AnswerExamples.objects.create(
+                tqID=tqID,
+                cInput=example['input'],
+                cOutput=example['output'],
+                creator=creator,
+            )
+
+        # 测试用例处理
+        # 前端将所有测试用例存放到同一数组中，一个测试用例即为对应数组的一个元素
+        for case in problem_json['cases']:
+            TestExamples.objects.create(
+                tqID=tqID,
+                cInput=case['input'],
+                cOutput=case['output'],
+                creator=creator,
+            )
+        
+        response['status'] = 'ok'
+        return HttpResponse(json.dumps(response), status=200)
+
+    response['status'] = 'error'
+    return HttpResponse(json.dumps(response), status=200)
+
