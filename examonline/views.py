@@ -601,6 +601,7 @@ def get_thePro(request):
         response['data']['answers'] = problem_data.answer
         response['data']['limit'] = problem_data.limit
         response['data']['difficulty'] = problem_data.difficulty
+        response['data']['is_audited'] = problem_data.is_audited
 
         if problem_data.tqType == '填空题':
             response['data']['inputnum'] = problem_data.inputnums
@@ -1913,3 +1914,80 @@ def stu_addPro(request):
     response['status'] = 'error'
     return HttpResponse(json.dumps(response), status=200)
 
+
+'''
+url: /examonline/getAudits
+use: 用于获取所有待审核题目
+http: get
+content: userid
+'''
+def get_audits(request):
+    assert request.method == 'GET'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 判断身份
+    if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher'):
+        response['data'] = list()
+
+        # 审核列表中只会出现学生的题目
+        stu_ids = list(UserInfo.objects.filter(identify='student').values('userID'))
+        for stu_id in stu_ids:
+            all_problems = list(TestQuestions.objects.filter(creator=stu_id['userID']).values())
+            # 数据库日期类型不可被json转换
+            for problem in all_problems:
+                tmp = dict()
+
+                tmp['tqID'] = problem['tqID']
+                tmp['name'] = problem['name']
+                tmp['tags'] = problem['tags']
+                tmp['difficulty'] = problem['difficulty']
+                tmp['state'] = problem['is_audited']
+                tmp['limits'] = problem['limit']
+
+                response['data'].append(tmp)
+
+        return HttpResponse(json.dumps(response), status=200)
+
+    return HttpResponse(status=500)
+
+
+'''
+url: /examonline/changeAudit
+use: 用于改变题目审核状态
+http: post
+content: tqID / state
+'''
+def change_audit(request):
+    assert request.method == 'POST'
+    response = dict()
+
+    # 处理 token 
+    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
+    # token_status = check_token(request_token)  # 解密并检验token
+    userID = get_username(request_token)
+
+    # 判断身份
+    if (UserInfo.objects.get(userID=userID).identify == 'admin' or \
+        UserInfo.objects.get(userID=userID).identify == 'teacher'):
+        msg = json.loads(request.body.decode('utf-8'))
+
+        tqID = msg['proID']
+        state = msg['state']
+
+        print(state)
+
+        if state == 'pass':
+            TestQuestions.objects.filter(tqID=tqID).update(is_audited=1)
+        elif state == 'nopass':
+            TestQuestions.objects.filter(tqID=tqID).update(is_audited=2)
+    
+        response['status'] = 'change success'
+        return HttpResponse(json.dumps(response), status=200)
+
+    return HttpResponse(status=500)

@@ -38,4 +38,6 @@ urlpatterns = [
     path('deleteRecord', views.delete_record, name='deleteRecord'),
     path('stuGetPros', views.stu_getPros, name='stuGetPros'),
     path('stuAddPro', views.stu_addPro, name='stuAddPro'),
+    path('getAudits', views.get_audits, name='getAudits'),
+    path('changeAudit', views.change_audit, name='changeAudit'),
 ]
