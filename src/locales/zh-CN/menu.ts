@@ -58,4 +58,5 @@ export default {
   'menu.UserList': '用户列表',
   'menu.ExamRecords': '考试记录',
   'menu.StuSubmitList': '好题提交',
+  'menu.AuditList': '审核列表',
 };

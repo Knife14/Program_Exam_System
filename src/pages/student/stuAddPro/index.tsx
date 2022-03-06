@@ -92,6 +92,7 @@ export default () => {
                 name="limits" 
                 label="限制条件" 
                 tooltip="时间限制以ms为单位，内存限制以mb为单位。每个标签以回车（enter）键为结束"
+                rules={[{ required: true, message: '请设置题目限制！' }]}
             />
             <ProFormSelect
                 width="xl"
@@ -99,6 +100,7 @@ export default () => {
                 name="tags"
                 label="标签"
                 valueEnum={tags_dict}
+                rules={[{ required: true, message: '请确认题目标签！' }]}
             />
             <ProFormSelect
                 width="xl"
@@ -110,7 +112,7 @@ export default () => {
                 '困难': '困难',
                 '中等': '中等',
                 }}
-                rules={[{ required: true, message: '请输入题目内容！' }]}
+                rules={[{ required: true, message: '请选择题目难度！' }]}
             />
             <ProFormTextArea
                 width="xl"

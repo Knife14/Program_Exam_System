@@ -14,6 +14,7 @@ export type TableListItem = {
     tags: string;
     difficulty: string;
     limits: string;
+    state: string;
   };
 
 // 状态数

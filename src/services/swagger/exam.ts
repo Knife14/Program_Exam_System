@@ -309,3 +309,28 @@ export async function stuAddPro(body: any, options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 获取学生创建的所有试题 GET /examonline/getAudits */
+export async function getAudits(options?: { [key: string]: any }) {
+  return request<any>('/examonline/getAudits', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** 提交题目审核结果 POST /examonline/changeAudit */
+export async function changeAudit(body: any,options?: { [key: string]: any }) {
+  return request<any>('/examonline/changeAudit', {
+    headers:{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'authorization':`Bearer ${localStorage.getItem('token')}`
+    },
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}

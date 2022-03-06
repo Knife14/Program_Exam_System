@@ -113,6 +113,18 @@
     access: 'canAdmin',
     component: './exam/examRecord'
   },
+  {
+    name: 'AuditList',
+    icon: 'diff',
+    path: '/admin/auditList',
+    access: 'canAdmin',
+    component: './problems/auditList',
+  },
+  {
+    path: '/admin/gettheAudit',
+    access: 'canAdmin',
+    component: './problems/gettheAudit'
+  },
   // teacher
   {
     name: 'TeaCenter',
@@ -186,6 +198,18 @@
     path: '/teacher/examRecord',
     access: 'canTeacher',
     component: './exam/examRecord'
+  },
+  {
+    name: 'AuditList',
+    icon: 'diff',
+    path: '/teacher/auditList',
+    access: 'canTeacher',
+    component: './problems/auditList',
+  },
+  {
+    path: '/admin/gettheAudit',
+    access: 'canAdmin',
+    component: './problems/gettheAudit'
   },
   // student
   {
