@@ -93,6 +93,12 @@ const columns: ProColumns<TableListItem>[] = [
       passed: { text: '已通过', status: 'Success' },
       failed: { text: '未通过', status: 'Error' },
     },
+    filters: [
+      { text: '未审核', value: 'unknown' },
+      { text: '已通过', value: 'passed' },
+      { text: '未通过', value: 'failed' },
+    ],
+    onFilter: (value, record) => record.state == value,
   },
   {
     title: '操作',

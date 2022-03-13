@@ -52,7 +52,7 @@ const columns: ProColumns<TableListItem>[] = [
     key: 'since',
     dataIndex: 'startTime',
     valueType: 'datetime',
-    sorter: (a, b) => a.startTime - b.startTime,
+    sorter: (a, b) => new Date(a.startTime).getTime() / 1000 - new Date(b.startTime).getTime() / 1000
   },
   {
     title: (
@@ -64,7 +64,7 @@ const columns: ProColumns<TableListItem>[] = [
     key: 'since',
     dataIndex: 'endTime',
     valueType: 'datetime',
-    sorter: (a, b) => a.endTime - b.endTime,
+    sorter: (a, b) => new Date(a.endTime).getTime() / 1000 - new Date(b.endTime).getTime() / 1000
   },
   {
     title: '创建者编号',
