@@ -18,14 +18,14 @@ import ProForm, {
   } from '@ant-design/pro-form';
 import { addExam } from '../../../services/swagger/exam';
 
-type TestType = '综合组卷' | '自由组卷';
+type TestType = '快速组卷' | '范围组卷' | '自定义组卷';
 type DataItem = {
     tag: string;
     nums: string;
   };
 
 export default () => {
-  const [testType, setTestType] = useState<TestType>('综合组卷');
+  const [testType, setTestType] = useState<TestType>('快速组卷');
 
   const tags_list = [
     '数组', '字符串', '排序', '矩阵', '模拟', '枚举', '字符串匹配', 
@@ -67,10 +67,12 @@ export default () => {
             } 
         }}
         onValuesChange={(_, values) => {
-            if (values['type'] === '自由组卷') {
-                setTestType('自由组卷');
-            } else {
-                setTestType('综合组卷');
+            if (values['type'] === '范围组卷') {
+                setTestType('范围组卷');
+            } else if (values['type'] === '快速组卷') {
+                setTestType('快速组卷');
+            } else if (values['type'] === '自定义组卷') {
+                setTestType('自定义组卷');
             }
         }}
       >
@@ -102,18 +104,22 @@ export default () => {
             tooltip="每张试卷限出10题，将会以5道填空题5道编码题的形式进行组卷；"
             options={[
                 {
-                label: '综合组卷',
-                value: '综合组卷',
+                    label: '快速组卷',
+                    value: '快速组卷',
                 },
                 {
-                label: '自由组卷',
-                value: '自由组卷',
+                    label: '范围组卷',
+                    value: '范围组卷',
                 },
+                {
+                    label: '自定义组卷',
+                    value: '自定义组卷',
+                }
             ]}
             rules={[{ required: true, message: '请选择组卷模式！' }]}
         />
         { 
-            testType === '自由组卷' && (
+            testType === '范围组卷' && (
                 <>
                     <BetaSchemaForm<DataItem>
                         layoutType="Embed"
@@ -134,6 +140,37 @@ export default () => {
                                         title: '数目',
                                         width: 'xs',
                                         dataIndex: 'nums',
+                                        formItemProps: {
+                                            rules: [
+                                                {
+                                                required: true,
+                                                message: '此项为必填项',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                ]
+                            }]
+                        }]}
+                    />
+                </>
+            )
+        }
+        { 
+            testType === '自定义组卷' && (
+                <>
+                    <BetaSchemaForm<DataItem>
+                        layoutType="Embed"
+                        columns={[{ 
+                            valueType: 'formList',
+                            dataIndex: 'tns',
+                            columns:[{
+                                valueType: 'group',
+                                columns:[
+                                    {
+                                        title: '题目ID',
+                                        width: 'md',
+                                        dataIndex: 'tqID',
                                         formItemProps: {
                                             rules: [
                                                 {
