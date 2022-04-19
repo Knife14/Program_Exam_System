@@ -41,10 +41,19 @@ export default () => {
     '拒绝采样', '数据库设计', '数据流', '交互', '脑筋急转弯', '迭代器', 
     '多线程', 'Shell', '其他'
   ];
-  var valueEnum = {};
+  var tagEnum = {};
   for (let tag of tags_list){
-    valueEnum[tag] = {text: tag};
+    tagEnum[tag] = {text: tag};
   }
+
+  var diffEnum = {};
+  diffEnum['简单'] = {text: '简单'};
+  diffEnum['中等'] = {text: '中等'};
+  diffEnum['困难'] = {text: '困难'};
+
+  var typeEnum = {};
+  typeEnum['填空题'] = {text: '填空题'};
+  typeEnum['编码题'] = {text: '编码题'};
 
   return (
     <div>
@@ -101,7 +110,7 @@ export default () => {
             width="xl"
             name="type"
             label="组卷模式"
-            tooltip="每张试卷限出10题，将会以5道填空题5道编码题的形式进行组卷；"
+            tooltip="快速组卷将会出10题，填空题4题编码题6题，难度按照3：5：2分布；"
             options={[
                 {
                     label: '快速组卷',
@@ -131,10 +140,48 @@ export default () => {
                                 columns:[
                                     {
                                         title: '标签',
-                                        dataIndex: 'tags',
+                                        dataIndex: 'tag',
                                         valueType: 'select',
-                                        width: 'md',
-                                        valueEnum,
+                                        width: 'sm',
+                                        valueEnum: tagEnum,
+                                        formItemProps: {
+                                            rules: [
+                                                {
+                                                required: true,
+                                                message: '此项为必填项',
+                                                },
+                                            ],
+                                        },
+                                    },
+                                    {
+                                        title: '难度',
+                                        width: 'xs',
+                                        dataIndex: 'diff',
+                                        valueType: 'select',
+                                        formItemProps: {
+                                            rules: [
+                                                {
+                                                required: true,
+                                                message: '此项为必填项',
+                                                },
+                                            ],
+                                        },
+                                        valueEnum: diffEnum,
+                                    },
+                                    {
+                                        title: '类型',
+                                        dataIndex: 'type',
+                                        valueType: 'select',
+                                        width: 'xs',
+                                        valueEnum: typeEnum,
+                                        formItemProps: {
+                                            rules: [
+                                                {
+                                                required: true,
+                                                message: '此项为必填项',
+                                                },
+                                            ],
+                                        },
                                     },
                                     {
                                         title: '数目',

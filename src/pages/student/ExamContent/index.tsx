@@ -113,7 +113,7 @@ export default () => {
                 <Row gutter={20} wrap={false}>
                     <Col span={20}>
                         <Tabs tabPosition='left' onChange={() => {SetSubmitStatus('unknown');}}>
-                            {[...Array.from({ length: 10 }, (v, i) => i)].map(i => (
+                            {[...Array.from({ length: examData.length }, (v, i) => i)].map(i => (
                                 <Tabs.TabPane tab={`问题${i + 1}`} key={i}>
                                     <div>
                                         <ProForm
