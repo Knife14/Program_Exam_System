@@ -1,10 +1,11 @@
 from datetime import datetime
+import re
 from time import strptime
 from typing import Collection
-from django.core.signing import dumps
-from django.shortcuts import render
-from django.http import HttpResponse, response
+
+from django.http import HttpResponse
 from django.utils import timezone
+from django.contrib.auth import authenticate, login, logout
 
 # 引入token
 from .tokenevents import *
@@ -44,7 +45,10 @@ def login(request):
         currentUSER = list(UserInfo.objects.filter(userID=userID).values()).pop()
         response = dict()
 
-        if currentUSER['password'] == password and not currentUSER['is_online']:  # 
+        if currentUSER['password'] == password and not currentUSER['is_online']:
+            # is_logined = authenticate(request, username=userID, password=password)
+
+            # login(request)
             # 创建token
             currentUSER_token = create_token(userID)
 
@@ -78,7 +82,7 @@ def current_user(request):
     # token_status = check_token(request_token)  # 解密并检验token
     userID = get_username(request_token)
 
-    if userID and UserInfo.objects.get(userID=userID).is_online:
+    if userID and UserInfo.objects.get(userID=userID).is_online:  # 
         response['success'] = True
         response['data'] = dict()
 
@@ -127,6 +131,7 @@ def out_login(request):
 
     # 修改user info表对应用户的登录状态 
     UserInfo.objects.filter(userID=userID).update(is_online=False)
+    # logout(request)
 
     response['data'] = dict()
     response['success'] = True
@@ -796,7 +801,6 @@ def add_exam(request):
     if UserInfo.objects.get(userID=userID).identify == 'admin' or \
         UserInfo.objects.get(userID=userID).identify == 'teacher':
         msg = json.loads(request.body.decode('utf-8'))
-        print(msg)
         
         # 考试场次与名称
         examID = \
@@ -815,84 +819,116 @@ def add_exam(request):
         creator = userID
 
         # 组卷
-        tqlist = set()  # 已选题目列表
-        total, f_total, p_total = 10, 5, 5 # 限制十道题，且填空五道，编码五道
-        if msg['type'] == '综合组卷':
-            while total > 0:
-                pros = list(TestQuestions.objects.filter(is_audited=1).values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
-                leng = len(pros)
+        tqlist = list()  # 已选题目列表
 
-                tmp = random.randint(0, leng - 1)
-                while pros[tmp]['tqID'] in tqlist:
-                    tmp = random.randint(0, leng - 1)
-                
-                if pros[tmp]['tqType'] == '填空题' and f_total > 0:
-                    tqlist.add(pros[tmp]['tqID'])
-                    f_total -= 1
-                    total -= 1
-                elif pros[tmp]['tqType'] == '编码题' and p_total > 0:
-                    tqlist.add(pros[tmp]['tqID'])
-                    p_total -= 1
-                    total -= 1
-        elif msg['type'] == '自由组卷':
-            for tn in msg['tns']:
-                nums = int(tn['nums'])
-                if total - nums >= 0:
-                    # 检索题库里相关标签的试题
-                    # 字符串匹配 == %content%
-                    pros = list(TestQuestions.objects.filter(tags__contains=tn['tags'], is_audited=1).values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
-                    
-                    # 后期引入组卷算法，需要考虑试题当前次数等权重影响
-                    leng = len(pros)
-                    for _ in range(nums):
-                        # 目前先用着随机值组卷
-                        tmp = random.randint(0, leng - 1)
-                        
-                        # 避免试题重复选择
-                        t_chosed = set()  # 当前类型已选择的题目
-                        while pros[tmp]['tqID'] in tqlist:
-                            tmp = random.randint(0, leng - 1)
-                            
-                            # 为防止该标签类型的题目，已经通过别个标签选择时选择进入考试列表
-                            t_chosed.add(pros[tmp]['tqID'])
-                            if len(t_chosed) == leng:
-                                break
-                        if len(t_chosed) == leng:
-                            break
+        # 选择算法：修改的随机算法
+        # 添加权重作为选择依据
+        def select_pros(pros: list, nums: int):
+            coe = dict()  # 试题权重
 
-                        if pros[tmp]['tqType'] == '填空题' and f_total >= 1:
-                            f_total -= 1
-                            total -= 1
-                            tqlist.add(pros[tmp]['tqID'])
-                        elif pros[tmp]['tqType'] == '编码题' and p_total >= 1:
-                            p_total -= 1
-                            total -= 1
-                            tqlist.add(pros[tmp]['tqID'])
-                        else:
-                            break
-
-                        print(tqlist)
+            for pro in pros:
+                if pro['aqtimes'] != 0:
+                    coe[pro['tqID']] = \
+                        len(pro['tags']) * 0.05 + 1 / pro['aqtimes'] + \
+                        random.random() * (1 / pro['aqtimes'])
                 else:
-                    response['status'] = 'num error'
-                    return HttpResponse(json.dumps(response), status=200)
+                    coe[pro['tqID']] = \
+                        len(pro['tags']) * 0.05 + 0.5 + \
+                        random.random() / 4
             
-            # 遍历完要求类型题目后，仍不够十题，将会在题库中任意选取足够题目
-            while total > 0:
-                pros = list(TestQuestions.objects.filter(is_audited=1).values('tqID', 'name', 'tqType', 'tags', 'aqtimes'))
-                leng = len(pros)
+            result = sorted(coe.items(), key=lambda x: x[1], reverse=True)
+            
+            index = 0
+            while nums > 0 and index < len(result):
+                if result[index][0] not in tqlist:
+                    tqlist.append(result[index][0])
+                    nums -= 1
+                index += 1
+            
+            if nums != 0:
+                return nums
+            return 0
 
-                tmp = random.randint(0, leng - 1)
-                while pros[tmp]['tqID'] in tqlist:
-                    tmp = random.randint(0, leng - 1)
+        if msg['type'] == '快速组卷':
+            total = 10 # 限制十道题，4填空6编码
+
+            # 组卷：填空题
+            fill_sim_pros = list(
+                TestQuestions.objects.filter(is_audited=1, tqType='填空题', difficulty='简单').values(
+                    'tqID', 'name', 'tags', 'aqtimes'
+                )
+            )
+            select_pros(fill_sim_pros, 2)
+
+            fill_mid_pros = list(
+                TestQuestions.objects.filter(is_audited=1, tqType='填空题', difficulty='中等').values(
+                    'tqID', 'name', 'tags', 'aqtimes'
+                )
+            )
+            select_pros(fill_mid_pros, 1)
+
+            # 组卷：编码题
+            program_sim_pros = list(
+                TestQuestions.objects.filter(is_audited=1, tqType='编码题', difficulty='简单').values(
+                    'tqID', 'name', 'tags', 'aqtimes'
+                )
+            )
+            select_pros(program_sim_pros, 1)
+
+            program_mid_pros = list(
+                TestQuestions.objects.filter(is_audited=1, tqType='编码题', difficulty='中等').values(
+                    'tqID', 'name', 'tags', 'aqtimes'
+                )
+            )
+            select_pros(program_mid_pros, 4)
+
+            program_diff_pros = list(
+                TestQuestions.objects.filter(is_audited=1, tqType='编码题', difficulty='困难').values(
+                    'tqID', 'name', 'tags', 'aqtimes'
+                )
+            )
+            select_pros(program_diff_pros, 2)
+
+            if len(tqlist) != total:
+                response['status'] = 'wrong'
+                return HttpResponse(
+                    json.dumps(response), status=500
+                )
+        elif msg['type'] == '范围组卷':
+            need_add_num = 0  # 如果出现不符合条件的题目选择，但为了保证题目数量的一致
+
+            for tn in msg['tns']:
+                diff = tn['diff']
+                nums = int(tn['nums'])
+                tag = tn['tag']
+                ptype = tn['type']
                 
-                if pros[tmp]['tqType'] == '填空题' and f_total > 0:
-                    tqlist.add(pros[tmp]['tqID'])
-                    f_total -= 1
-                    total -= 1
-                elif pros[tmp]['tqType'] == '编码题' and p_total > 0:
-                    tqlist.add(pros[tmp]['tqID'])
-                    p_total -= 1
-                    total -= 1
+                pros = list(
+                    TestQuestions.objects.filter(
+                        tags__contains=tag, difficulty=diff, tqType=ptype, is_audited=1
+                    ).values('tqID', 'name', 'tqType', 'tags', 'aqtimes')
+                )
+
+                return_num = select_pros(pros, nums)
+                if return_num != 0:
+                    need_add_num += return_num
+            
+            if need_add_num > 0:
+                pros = list(
+                    TestQuestions.objects.filter(
+                        difficulty='简单', is_audited=1
+                    ).values('tqID', 'name', 'tqType', 'tags', 'aqtimes')
+                )
+
+                index = 0
+                while need_add_num > 0:
+                    if pros[index]['tqID'] not in tqlist:
+                        tqlist.append(pros[index]['tqID'])
+                        need_add_num -= 1
+                    index += 1
+        elif msg['type'] == '自定义组卷':
+            for curr_tqID in msg['tns']:
+                tqlist.add(curr_tqID['tqID'])
 
         # 存入数据库
         ExamInfo.objects.create(
@@ -1071,7 +1107,7 @@ def delete_exam(request):
 
 '''
 url: /examonline/stuGetExam
-use: 用于学生参与考试，仅服务于学生端，由于时间关系，需要另外写一个接口特殊处理
+use: 用于学生参与考试，仅服务于学生端
 http: POST
 content: examID
 '''
@@ -1193,7 +1229,7 @@ def exit_exam(request):
 
 '''
 url: /examonline/sendAbnormal
-use: 用于监考
+use: 用于考试过程中异常处理
 http: post
 content: examID / type / content
 '''
@@ -1522,7 +1558,7 @@ def get_score(request):
 
 '''
 url: /examonline/Invigilation
-use: 用于监考
+use: 用于监考状况显示
 http: post
 content: examID
 '''
