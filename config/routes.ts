@@ -52,22 +52,42 @@
     path: '/admin/ProList',
     icon: 'plus',
     access: 'canAdmin',
-    component: './problems/problemsList',
-  },
-  {
-    path: '/admin/addProblem',
-    access: 'canAdmin',
-    component: './problems/addProblem',
-  },
-  {
-    path: '/admin/changePro',
-    access: 'canAdmin',
-    component: './problems/changePro',
-  },
-  {
-    path: '/admin/deletePro',
-    access: 'canAdmin',
-    component: './problems/deletePro',
+    // component: './problems/problemsList',
+    routes: [
+      {     
+        name: 'C++',
+        path: '/admin/ProList/C++',
+        access: 'canAdmin',
+        component: './problems/CProList',
+      },
+      {     
+        name: 'Python',
+        path: '/admin/ProList/Python',
+        access: 'canAdmin',
+        component: './problems/PyProList',
+      },
+      {     
+        name: 'Comprehensive',
+        path: '/admin/ProList/Comprehensive',
+        access: 'canAdmin',
+        component: './problems/ComprehensiveList',
+      },
+      {
+        path: '/admin/ProList/addProblem',
+        access: 'canAdmin',
+        component: './problems/addProblem',
+      },
+      {
+        path: '/admin/ProList/changePro',
+        access: 'canAdmin',
+        component: './problems/changePro',
+      },
+      {
+        path: '/admin/ProList/deletePro',
+        access: 'canAdmin',
+        component: './problems/deletePro',
+      },
+    ],
   },
   {
     name: 'ExamList',

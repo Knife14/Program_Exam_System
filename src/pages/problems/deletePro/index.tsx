@@ -122,6 +122,14 @@ export default () => {
                 />
                 <ProFormTextArea
                     readonly
+                    width="xl" 
+                    name="course" 
+                    label="所属课程"
+                    value={proData['course']}
+                    allowClear={false}
+                />
+                <ProFormTextArea
+                    readonly
                     width="xl"
                     name="difficulty"
                     label="难度"

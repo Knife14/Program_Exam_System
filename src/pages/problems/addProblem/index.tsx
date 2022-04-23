@@ -84,6 +84,17 @@ export default () => {
             <ProFormSelect
               width="xl"
               mode="single"
+              name="course"
+              label="所属课程"
+              valueEnum={{
+                'C++': 'C++',
+                'Python': 'Python',
+              }}
+              tooltip="如果没有选择所属课程，将自动列入综合试题当中。"
+            />
+            <ProFormSelect
+              width="xl"
+              mode="single"
               name="difficulty"
               label="难度"
               valueEnum={{
@@ -136,6 +147,17 @@ export default () => {
               name="tags"
               label="标签"
               valueEnum={tags_dict}
+            />
+            <ProFormSelect
+              width="xl"
+              mode="single"
+              name="course"
+              label="所属课程"
+              valueEnum={{
+                'C++': 'C++',
+                'Python': 'Python',
+              }}
+              tooltip="如果没有选择所属课程，将自动列入综合试题当中。"
             />
             <ProFormSelect
               width="xl"

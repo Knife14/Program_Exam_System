@@ -1,13 +1,14 @@
 import { request } from 'umi';
 
-/** 获取所有试题 GET /examonline/getProblems */
-export async function getProblems(options?: { [key: string]: any }) {
+/** 获取所有试题 POST /examonline/getProblems */
+export async function getProblems(body: any, options?: { [key: string]: any }) {
   return request<any>('/examonline/getProblems', {
     headers:{
       'Content-Type': 'application/x-www-form-urlencoded',
       'authorization':`Bearer ${localStorage.getItem('token')}`
     },
-    method: 'GET',
+    method: 'POST',
+    data: body,
     ...(options || {}),
   });
 }
