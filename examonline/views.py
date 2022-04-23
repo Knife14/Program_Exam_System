@@ -443,10 +443,10 @@ def delete_user(request):
 '''
 url: /examonline/getProblems
 use: 用于展示所有题目
-http: GET
+http: POST
 '''
 def get_problems(request):
-    assert request.method == 'GET'
+    assert request.method == 'POST'
     response = dict()
 
     # 处理 token 
@@ -456,7 +456,9 @@ def get_problems(request):
 
     if UserInfo.objects.get(userID=userID).identify == 'admin' or \
         UserInfo.objects.get(userID=userID).identify == 'teacher':
-        all_problems = list(TestQuestions.objects.filter(is_audited=1).values())
+        course = request.body.decode('utf-8')
+
+        all_problems = list(TestQuestions.objects.filter(is_audited=1, courses=course).values())
 
         # 数据库日期类型不可被json转换
         response['data'] = list()
@@ -468,6 +470,7 @@ def get_problems(request):
             tmp['tags'] = problem['tags']
             tmp['type'] = problem['tqType']
             tmp['creator'] = problem['creator']
+            tmp['course'] = problem['courses'] if problem['courses'] else '综合'
             tmp['difficulty'] = problem['difficulty']
 
             creatorID = problem['creator']
@@ -513,12 +516,14 @@ def add_problem(request):
             name = problem_json['name']
             
             tags = list()
-            for tag in problem_json['tags']:
-                tags.append(tag)
+            if 'tags' in problem_json:
+                for tag in problem_json['tags']:
+                    tags.append(tag)
 
             content = problem_json['content']
             difficulty = problem_json['difficulty']
-            
+            course = problem_json['course'] if 'course' in problem_json else ''
+
             if tqType == '填空题':
                 # 多个答案将会以列表形式存储，只要匹配上一个，即为对
                 # 一个答案里有多个参数，将以,区分
@@ -536,9 +541,11 @@ def add_problem(request):
                     inputnums=inputnum,
                     difficulty=difficulty,
                     is_audited=1,
+                    courses=course,
                 )
             elif tqType == '编码题':
-                limit = problem_json['limits']
+                limit = problem_json['limits'] if 'limits' in problem_json else ''
+
                 TestQuestions.objects.create(
                     tqID=tqID,
                     tqType=tqType,
@@ -549,6 +556,7 @@ def add_problem(request):
                     creator=creator,
                     difficulty=difficulty,
                     is_audited=1,
+                    courses=course,
                 )
 
                 # 示例处理
@@ -607,6 +615,7 @@ def get_thePro(request):
         response['data']['limit'] = problem_data.limit
         response['data']['difficulty'] = problem_data.difficulty
         response['data']['is_audited'] = problem_data.is_audited
+        response['data']['course'] = problem_data.courses
 
         if problem_data.tqType == '填空题':
             response['data']['inputnum'] = problem_data.inputnums
