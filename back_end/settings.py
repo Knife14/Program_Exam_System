@@ -145,10 +145,17 @@ CACHES = {
 
 # DRF verification by token
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
         #添加Token验证，如果Token过期，不需要登录的界面也不能访问，最好配置在具体的页面
     ]
+}
+
+JWT_AUTH = {
+    'JWT_AUTH_HEADER_PREFIX': 'Token',
 }

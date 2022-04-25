@@ -2,6 +2,9 @@ import time
 from django.core import signing
 import hashlib
 from django.core.cache import cache
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
  
 HEADER = {'typ': 'JWP', 'alg': 'default'}
 KEY = 'userID'
@@ -55,10 +58,14 @@ def get_username(token):
     payload = get_payload(token)
     return payload['userID']
  
- 
+
 def check_token(token):
     username = get_username(token)
     last_token = cache.get(username)
     if last_token:
         return last_token == token
     return False
+
+def del_token(token):
+    username = get_username(token)
+    cache.delete(username)

@@ -5,7 +5,6 @@ from typing import Collection
 
 from django.http import HttpResponse
 from django.utils import timezone
-from django.contrib.auth import authenticate, login, logout
 
 # 引入token
 from .tokenevents import *
@@ -45,15 +44,9 @@ def login(request):
         currentUSER = list(UserInfo.objects.filter(userID=userID).values()).pop()
         response = dict()
 
-        if currentUSER['password'] == password and not currentUSER['is_online']:
-            # is_logined = authenticate(request, username=userID, password=password)
-
-            # login(request)
+        if currentUSER['password'] == password:
             # 创建token
             currentUSER_token = create_token(userID)
-
-            # 修改user info表对应用户的登录状态
-            UserInfo.objects.filter(userID=userID).update(is_online=True)
 
             # request response
             response['status'] = 'ok'
@@ -78,11 +71,15 @@ def current_user(request):
     response = dict()
 
     # 处理 token 
-    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
-    # token_status = check_token(request_token)  # 解密并检验token
-    userID = get_username(request_token)
+    try:
+        request_token = request.META['HTTP_AUTHORIZATION'].split()[1]  # 取出token，未解密
+        token_status = check_token(request_token)  # 解密并检验token
+        userID = get_username(request_token)
+    except:
+        response['isLogin'] = False
+        return HttpResponse(json.dumps(response), status=401)
 
-    if userID and UserInfo.objects.get(userID=userID).is_online:  # 
+    if userID and token_status:
         response['success'] = True
         response['data'] = dict()
 
@@ -125,19 +122,21 @@ def out_login(request):
     response = dict()
 
     # 处理 token 
-    request_token = request.META['HTTP_AUTHORIZATION']  # 取出token，未解密
-    # token_status = check_token(request_token)  # 解密并检验token
-    userID = get_username(request_token)
+    request_token = request.META['HTTP_AUTHORIZATION'].split()[1]  # 取出token，未解密
+    token_status = check_token(request_token)  # 解密并检验token
 
-    # 修改user info表对应用户的登录状态 
-    UserInfo.objects.filter(userID=userID).update(is_online=False)
-    # logout(request)
+    if token_status:
+        del_token(request_token)
 
-    response['data'] = dict()
-    response['success'] = True
+        response['data'] = dict()
+        response['success'] = True
 
-    return HttpResponse(json.dumps(response), status=200)
+        return HttpResponse(json.dumps(response), status=200)
+    else:
+        response['data'] = dict()
+        response['success'] = False
 
+        return HttpResponse(json.dumps(response), status=500)
 '''
 url: /examonline/changeMyself
 use: 用于用户本人修改个人信息
@@ -223,7 +222,6 @@ def add_user(request):
 
     try:
         if UserInfo.objects.get(userID=admin_ID).identify == 'admin':
-            print('in')
             # 处理 request body
             userInfo_json = json.loads(request.body.decode('utf-8'))
             # 根据身份分类处理
@@ -696,22 +694,31 @@ def change_pro(request):
                             creator=userID,
                         )
                 elif pro_k == 'name':
-                    nc_problem.update(name=pro_v, changetime=timezone.now())
+                    if len(pro_v) > 0:
+                        nc_problem.update(name=pro_v, changetime=timezone.now())
                 elif pro_k == 'answers':
-                    nc_problem.update(answer=pro_v, changetime=timezone.now())
+                    if len(pro_v) > 0:
+                        nc_problem.update(answer=pro_v, changetime=timezone.now())
                 elif pro_k == 'tags':
                     tags = list()
                     for tag in pro_v:
                         tags.append(tag)
-                    nc_problem.update(tags=str(tags), changetime=timezone.now())
+                        nc_problem.update(tags=str(tags), changetime=timezone.now())
                 elif pro_k == 'limits':
-                    nc_problem.update(limit=pro_v, changetime=timezone.now())
+                    if len(pro_v) > 0:
+                        nc_problem.update(limit=pro_v, changetime=timezone.now())
                 elif pro_k == 'content':
-                    nc_problem.update(content=pro_v, changetime=timezone.now())
+                    if len(pro_v) > 0:
+                        nc_problem.update(content=pro_v, changetime=timezone.now())
                 elif pro_k == 'inputnum':
-                    nc_problem.update(inputnums=pro_v, changetime=timezone.now())
+                    if len(pro_v) > 0:
+                        nc_problem.update(inputnums=pro_v, changetime=timezone.now())
                 elif pro_k == 'difficulty':
-                    nc_problem.update(difficulty=pro_v, changetime=timezone.now())
+                    if len(pro_v) > 0:
+                        nc_problem.update(difficulty=pro_v, changetime=timezone.now())
+                elif pro_k == 'course':
+                    if len(pro_v) > 0:
+                        nc_problem.update(courses=pro_v, changetime=timezone.now())
 
             response['status'] = 'ok'
             return HttpResponse(json.dumps(response), status=200)
@@ -783,6 +790,7 @@ def get_exams(request):
         tmp['startTime'] = str(test['startTime'])[:19]
         tmp['endTime'] = str(test['endTime'])[:19]
         tmp['creatorID'] = test['creator']
+        tmp['course'] = test['course'] if test['course'] else ''
         tmp['creatorName'] = UserInfo.objects.get(userID=test['creator']).name
 
         response['data'].append(tmp)
@@ -823,6 +831,7 @@ def add_exam(request):
         startTime = msg['datetime'][0]
         endTime = msg['datetime'][1]
         duraTime = msg['duratime']
+        course = msg['course'] if 'course' in msg else ''
         
         # 创建者
         creator = userID
@@ -863,14 +872,14 @@ def add_exam(request):
 
             # 组卷：填空题
             fill_sim_pros = list(
-                TestQuestions.objects.filter(is_audited=1, tqType='填空题', difficulty='简单').values(
+                TestQuestions.objects.filter(is_audited=1, courses=course, tqType='填空题', difficulty='简单').values(
                     'tqID', 'name', 'tags', 'aqtimes'
                 )
             )
             select_pros(fill_sim_pros, 2)
 
             fill_mid_pros = list(
-                TestQuestions.objects.filter(is_audited=1, tqType='填空题', difficulty='中等').values(
+                TestQuestions.objects.filter(is_audited=1, courses=course, tqType='填空题', difficulty='中等').values(
                     'tqID', 'name', 'tags', 'aqtimes'
                 )
             )
@@ -878,25 +887,33 @@ def add_exam(request):
 
             # 组卷：编码题
             program_sim_pros = list(
-                TestQuestions.objects.filter(is_audited=1, tqType='编码题', difficulty='简单').values(
+                TestQuestions.objects.filter(is_audited=1, courses=course, tqType='编码题', difficulty='简单').values(
                     'tqID', 'name', 'tags', 'aqtimes'
                 )
             )
             select_pros(program_sim_pros, 1)
 
             program_mid_pros = list(
-                TestQuestions.objects.filter(is_audited=1, tqType='编码题', difficulty='中等').values(
+                TestQuestions.objects.filter(is_audited=1, courses=course, tqType='编码题', difficulty='中等').values(
                     'tqID', 'name', 'tags', 'aqtimes'
                 )
             )
             select_pros(program_mid_pros, 4)
 
             program_diff_pros = list(
-                TestQuestions.objects.filter(is_audited=1, tqType='编码题', difficulty='困难').values(
+                TestQuestions.objects.filter(is_audited=1, courses=course, tqType='编码题', difficulty='困难').values(
                     'tqID', 'name', 'tags', 'aqtimes'
                 )
             )
             select_pros(program_diff_pros, 2)
+
+            if len(tqlist) < total:
+                fill_sim_pros = list(
+                    TestQuestions.objects.filter(is_audited=1).values(
+                        'tqID', 'name', 'tags', 'aqtimes'
+                    )
+                )
+                select_pros(fill_sim_pros, total - len(tqlist))
 
             if len(tqlist) != total:
                 response['status'] = 'wrong'
@@ -914,7 +931,7 @@ def add_exam(request):
                 
                 pros = list(
                     TestQuestions.objects.filter(
-                        tags__contains=tag, difficulty=diff, tqType=ptype, is_audited=1
+                        tags__contains=tag, difficulty=diff, tqType=ptype, is_audited=1, courses=course
                     ).values('tqID', 'name', 'tqType', 'tags', 'aqtimes')
                 )
 
@@ -948,6 +965,7 @@ def add_exam(request):
             duraTime=duraTime,
             eqlist=list(tqlist),
             creator=creator,
+            course=course
         )
         for tqID in tqlist:
             cnt = TestQuestions.objects.get(tqID=tqID).aqtimes + 1
@@ -988,6 +1006,7 @@ def get_theExam(request):
         response['data']['startTime'] = str(examContent.startTime)[:-6]
         response['data']['endTime'] = str(examContent.endTime)[:-6]
         response['data']['duraTime'] = examContent.duraTime
+        response['data']['course'] = examContent.course
 
         response['data']['exPro'] = list()
         eqids = json.loads(examContent.eqlist.replace('\'', '\"'))  # json str -> list，引号严格使用双引号
@@ -1074,6 +1093,9 @@ def change_exam(request):
                                     response['status'] = 'change eqlist error'
                                     return HttpResponse(json.dumps(response), status=200)
                         ExamInfo.objects.filter(examID=examID).update(eqlist=eqlist, changetime=datetime.now())
+                elif ex_k =='course':
+                    if len(ex_v) > 0:
+                        ExamInfo.objects.filter(examID=examID).update(course=ex_v, changetime=datetime.now())
 
             response['status'] = 'ok'
             return HttpResponse(json.dumps(response), status=200)
@@ -1405,7 +1427,6 @@ def test_fill(request):
             tqContent = tqContent.replace('___', answer['input'], 1)  # 每个答案只替换一次
         with open('./filling_problems/' + filename + '.cpp', 'w', encoding='utf-8') as fillFile:
             fillFile.write(tqContent)
-        print(0)
 
         # 编译提交代码: g++ 编译 ./a.exe 执行 
         compile_order = 'cd .\\filling_problems\\ && g++ -o '+ filename + ' ' + filename +'.cpp'
@@ -1503,6 +1524,7 @@ def get_score(request):
         response['data']['basic']['examID'] = examID
         response['data']['basic']['startTime'] = str(curr_exam.startTime)
         response['data']['basic']['endTime'] = str(curr_exam.endTime)
+        response['data']['basic']['course'] = curr_exam.course
 
         # 成绩统计
         response['data']['PScore'] = list()  # 题目分数
@@ -2024,8 +2046,6 @@ def change_audit(request):
 
         tqID = msg['proID']
         state = msg['state']
-
-        print(state)
 
         if state == 'pass':
             TestQuestions.objects.filter(tqID=tqID).update(is_audited=1)
