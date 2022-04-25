@@ -954,7 +954,7 @@ def add_exam(request):
                     index += 1
         elif msg['type'] == '自定义组卷':
             for curr_tqID in msg['tns']:
-                tqlist.add(curr_tqID['tqID'])
+                tqlist.append(curr_tqID['tqID'])
 
         # 存入数据库
         ExamInfo.objects.create(
@@ -1332,11 +1332,11 @@ def test_program(request):
         passednum, alltesnum = 0, len(tes)  # 通过用例数
 
         if message['type'] == 'Python':
-            with open('./temp_program/' + userID + '+' + tqID + '.py', 'w', encoding='utf-8') as pyfile:
+            with open('.\\temp_program\\' + userID + '+' + tqID + '.py', 'w', encoding='utf-8') as pyfile:
                 pyfile.write(message['code'])
             
             for te in tes:
-                run_order = 'python ./temp_program/' + userID + '+' + tqID + '.py ' + te['cInput']
+                run_order = 'python .\\temp_program\\' + userID + '+' + tqID + '.py ' + te['cInput']
                 state, run_output = subprocess.getstatusoutput(run_order)
 
                 # 程序运行错误
@@ -1425,27 +1425,27 @@ def test_fill(request):
         filename = userID + '+' + tqID
         for answer in fanswers:
             tqContent = tqContent.replace('___', answer['input'], 1)  # 每个答案只替换一次
-        with open('./filling_problems/' + filename + '.cpp', 'w', encoding='utf-8') as fillFile:
+        with open('.\\filling_problems\\' + filename + '.cpp', 'w', encoding='utf-8') as fillFile:
             fillFile.write(tqContent)
 
         # 编译提交代码: g++ 编译 ./a.exe 执行 
-        compile_order = 'cd .\\filling_problems\\ && g++ -o '+ filename + ' ' + filename +'.cpp'
+        compile_order = 'g++ -o .\\filling_problems\\'+ filename + ' .\\filling_problems\\' + filename +'.cpp'
         subprocess.getstatusoutput(compile_order)
 
         run_order = '.\\filling_problems\\' + filename + '.exe'
         run_output = subprocess.getoutput(run_order)
         
         # 编译并运行数据库中标准答案
-        with open('./filling_problems/' + tqID + '.cpp', 'w', encoding='utf-8') as tqFile:
-            tqFile.write(tqContent)
-        tq_compile = 'cd .\\filling_problems\\ && g++ -o '+ tqID + ' ' + tqID +'.cpp'
+        with open('.\\filling_problems\\' + tqID + '.cpp', 'w', encoding='utf-8') as tqFile:
+            tqFile.write(tqAnswer)
+        tq_compile = 'g++ -o .\\filling_problems\\'+ tqID + ' .\\filling_problems\\' + tqID +'.cpp'
         subprocess.getstatusoutput(tq_compile)
 
         tq_run = '.\\filling_problems\\' + tqID + '.exe'
         tq_output = subprocess.getoutput(tq_run)
 
         # 注入数据库
-        if run_output == tq_output:
+        if run_output == tq_output and len(run_output) > 0:
             score = 5  # 得分
         else:
             score = 0

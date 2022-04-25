@@ -2,9 +2,6 @@ import time
 from django.core import signing
 import hashlib
 from django.core.cache import cache
-
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
  
 HEADER = {'typ': 'JWP', 'alg': 'default'}
 KEY = 'userID'
