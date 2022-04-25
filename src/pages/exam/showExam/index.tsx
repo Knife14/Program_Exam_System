@@ -142,11 +142,10 @@ export default () => {
                     >
                         <Descriptions.Item label="考试名称">{BasicData['name']}</Descriptions.Item>
                         <Descriptions.Item label="考试编号">{BasicData['examID']}</Descriptions.Item>
+                        <Descriptions.Item label="所属课程">{BasicData['course']}</Descriptions.Item>
                         <Descriptions.Item label="考试人数">{BasicData['stunums']}</Descriptions.Item>
                         <Descriptions.Item label="开始时间">{BasicData['startTime']}</Descriptions.Item>
-                        <Descriptions.Item label="结束时间">
-                            {BasicData['endTime']}
-                        </Descriptions.Item>
+                        <Descriptions.Item label="结束时间">{BasicData['endTime']}</Descriptions.Item>
                     </Descriptions>
                     <br />
                     <Row gutter={40}>

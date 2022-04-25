@@ -33,6 +33,11 @@ const columns: ProColumns<TableListItem>[] = [
     render: (_, record) => <Link target = "_blank" to={`./changeExam?examID=${record.examID}`}>{_}</Link>,
   },
   {
+    title: '所属课程',
+    width: 80,
+    dataIndex: 'course',
+  },
+  {
     title: '状态',
     width: 70,
     dataIndex: 'status',

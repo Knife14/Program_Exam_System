@@ -91,6 +91,13 @@ export default () => {
                         value={examData['duraTime']}
                         tooltip='单位：分钟'
                     />
+                    <ProFormTextArea
+                        readonly
+                        width='md'
+                        label='所属课程'
+                        name='course'
+                        value={examData['course']}
+                    />
                 </ProFormGroup>
                 <label >试题</label><br />
                 {

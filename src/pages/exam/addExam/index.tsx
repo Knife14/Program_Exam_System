@@ -93,6 +93,15 @@ export default () => {
             label="考试名称" 
             rules={[{ required: true, message: '请输入考试名称！' }]}
         />
+        <ProFormSelect 
+            width="xl" 
+            name="course" 
+            label="所属课程" 
+            valueEnum={{
+                'C++': 'C++',
+                'Python': 'Python',
+            }}
+        />
         <ProFormDateTimeRangePicker 
             width="xl"
             name="datetime" 

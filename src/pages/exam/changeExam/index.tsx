@@ -103,6 +103,15 @@ export default () => {
                             name="duratime" 
                             label="考试持续时间" 
                         />
+                        <ProFormSelect
+                            width="xl" 
+                            name="course" 
+                            label="所属课程" 
+                            valueEnum={{
+                                'C++': 'C++',
+                                'Python': 'Python',
+                            }}
+                        />
                         <ProFormList
                             name="eqs"
                             label="试题"
@@ -157,6 +166,13 @@ export default () => {
                         name='duraTime'
                         value={examData['duraTime']}
                         tooltip='单位：分钟'
+                    />
+                    <ProFormTextArea
+                        readonly
+                        width='md'
+                        label='所属课程'
+                        name='course'
+                        value={examData['course']}
                     />
                 </ProFormGroup>
                 <label >试题</label><br />
